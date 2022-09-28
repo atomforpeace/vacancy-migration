@@ -43,8 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'captcha',
+    'rest_framework',
 
     'authapp',
+    'mainapp',
+    'calcapp',
 ]
 
 MIDDLEWARE = [

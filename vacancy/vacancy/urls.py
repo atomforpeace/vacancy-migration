@@ -6,6 +6,9 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from authapp.forms import AdminLoginForm
+from calcapp.utils import export_results_to_xls
+from calcapp.views import CalcView, download_xlsx
+from mainapp.views import ListMetalApi, SetExperimentData
 
 admin.autodiscover()
 admin.site.login_form = AdminLoginForm
@@ -13,9 +16,16 @@ admin.site.login_template = 'authapp/login.html'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='mainapp/index.html'), name='index'),
+    # path('', TemplateView.as_view(template_name='mainapp/index.html'), name='index'),
+    path('', SetExperimentData.as_view(), name='index'),
 
     path("auth/", include(("authapp.urls", "authapp"), namespace="auth")),
+
+    path('api/metals/', ListMetalApi.as_view(), name='metals-api'),
+    path('calc/', CalcView.as_view(), name='calc'),
+    path('download/<str:path>', download_xlsx, name='download-xlsx'),
+    path('api-auth/', include('rest_framework.urls'))
+
 ]
 
 if settings.DEBUG:

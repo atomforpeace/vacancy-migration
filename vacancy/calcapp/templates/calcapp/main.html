@@ -1,0 +1,12 @@
+{% extends 'vacancy/base.html' %}
+{% load static %}
+
+{% block content %}
+{% if figure %}
+{{ figure|safe }}
+{% endif %}
+
+<br>
+
+<a href="{% url 'download-xlsx' results %}">Скачать таблицу</a>
+{% endblock %}
