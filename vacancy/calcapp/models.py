@@ -17,7 +17,7 @@ class Metal(models.Model):
     close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла')  # a1
 
     def __str__(self):
-        return self.name
+        return self.metal_name
 
     class Meta:
         verbose_name = 'металл'
@@ -42,7 +42,7 @@ class Defect(models.Model):
     recomb_rad = models.FloatField(verbose_name='Радиус спонтанной рекомбинации')  # eta
 
     def __str__(self):
-        return self.name
+        return self.defect_name
 
     class Meta:
         verbose_name = 'характеристика ТД'
@@ -59,7 +59,7 @@ class ExperimentSettings(models.Model):
     temp_stop = models.FloatField(verbose_name='Температура в конце эксперимента')
 
     def __str__(self):
-        return self.name
+        return self.set_name
 
     class Meta:
         verbose_name = 'условия эксперимента'
