@@ -78,6 +78,13 @@ class Experiment:
     """
     Эксперимент
     """
+    # size_delta = {
+    #     'dis': 0,
+    #     'gr': 0,
+    #     'tw': 0,
+    #     'clus': 0,
+    #     's': 0,
+    # }
 
     def __init__(self, detail, exp_settings):
         self.detail = detail
@@ -99,18 +106,11 @@ class Experiment:
         """
         Приток на дислокации
         """
+        common_factor = n.pi * self.detail.metal.dis_dens * c.DEBYE * b_factor(-self.detail.defect.mig_ener, self.temp) * self.exp_settings.warm_period
+        flow_plus = 3 * self.detail.metal.close_node ** 2 * self.concentrations['vac'] / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
+        flow_minus = self.detail.metal.grid_par ** 3 * self.concentrations['dis'] / 2 / (1 + 0.5 * b_factor(self.detail.defect.dis_ener, self.temp))
 
-        """
-        n_vd = 3*pi*ro_d*a1^2*nu*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
-        """
-        flow_plus = 3 * n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2 * c.DEBYE * self.concentrations['vac'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
-
-        """
-        n_vd_ = pi*ro_d*a1^2*nu*n_vd*tau*exp(-E_mv/(kT)) / (1+0.5*exp(E_vd/(kT)))
-        """
-        flow_minus = n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2 * c.DEBYE * self.concentrations['dis'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + 0.5 * b_factor(self.detail.defect.dis_ener, self.temp))
-
-        flow_delta = flow_plus - flow_minus  # м-3
+        flow_delta = (flow_plus - flow_minus) * common_factor  # м-3
 
         return flow_delta
 
@@ -120,17 +120,11 @@ class Experiment:
         Приток на зерна
         """
 
-        """
-        n_vg = 2*S_g*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
-        """
-        flow_plus = 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['vac'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(-self.detail.defect.gr_ener, self.temp))
+        common_factor = 2 * self.detail.metal.gr_sarea * c.DEBYE * b_factor(-self.detail.defect.mig_ener, self.temp) * self.exp_settings.warm_period
+        flow_plus = self.detail.metal.close_node * self.concentrations['vac'] / (1 + b_factor(-self.detail.defect.gr_ener, self.temp))
+        flow_minus = self.detail.metal.grid_par ** 3 * self.concentrations['gr'] / 4 / (1 + b_factor(self.detail.defect.gr_ener, self.temp))
 
-        """
-        n_vg_ = 2*S_g*a1*nu*n_g*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
-        """
-        flow_minus = 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['gr'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.gr_ener, self.temp))
-
-        flow_delta = flow_plus - flow_minus  # м-3
+        flow_delta = (flow_plus - flow_minus) * common_factor  # м-3
 
         return flow_delta
 
@@ -140,17 +134,12 @@ class Experiment:
         Приток на двойники
         """
 
-        """
-        n_vg = 2*S_t*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
-        """
-        flow_plus = 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['vac'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
+        common_factor = 2 * self.detail.metal.tw_sarea * c.DEBYE * b_factor(-self.detail.defect.mig_ener,
+                                                                     self.temp) * self.exp_settings.warm_period
+        flow_plus = self.detail.metal.close_node * self.concentrations['vac'] / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
+        flow_minus = self.detail.metal.grid_par ** 3 * self.concentrations['tw'] / 4 / (1 + b_factor(self.detail.defect.tw_ener, self.temp))
 
-        """
-        n_vg_ = 2*S_t*a1*nu*n_t*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
-        """
-        flow_minus = 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['tw'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.tw_ener, self.temp))
-
-        flow_delta = flow_plus - flow_minus  # м-3
+        flow_delta = (flow_plus - flow_minus) * common_factor  # м-3
 
         return flow_delta
 
@@ -158,10 +147,6 @@ class Experiment:
     def conc_del_clus(self):
         """
         Приток из кластеров
-        """
-
-        """
-        n_c = N_v1c*(a1/d_c0)^2*nu*n_c0 / (6*exp((E_mv+E_vc)/(kT)) 
         """
 
         flow = self.rel_volume_clus * (self.detail.metal.close_node / self.detail.defect.clus_init_diam) ** 2 * c.DEBYE / 6 * \
@@ -221,17 +206,13 @@ class Experiment:
 
             self.plot.append([t, self.sum_size_delta])
 
-            # self.concentrations['vac'] -= del_conc['dis'] + del_conc['gr'] + del_conc['tw'] - del_conc['clus']
+            self.concentrations['vac'] -= del_conc['dis'] + del_conc['gr'] + del_conc['tw'] - del_conc['clus']
 
             # print(self.sum_size_delta)
 
             self.results.append(
                 {
                     'T': self.temp,
-                    'nvd': del_conc['dis'],
-                    'nvg': del_conc['gr'],
-                    'nvt': del_conc['tw'],
-                    'nv': del_conc['clus'],
                     'Dcv': self.sum_size_delta,
                 }
             )

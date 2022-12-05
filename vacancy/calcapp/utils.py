@@ -23,28 +23,33 @@ def export_results_to_xls(data):
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
 
-    row_num = 0
+    col_num = 0
 
     columns = [
         'Температура',
-        'Dvt',
+        'nvd',
+        'nvg',
+        'nvt',
+        'nv',
+        'Dcv',
     ]
 
-    for col_num in range(len(columns)):
-        ws.write(row_num, col_num, columns[col_num], font_style)
+    ws.col(0).width = 4000
+
+    for row_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[row_num], font_style)
 
     font_style = xlwt.XFStyle()
 
-    for row in data:
-        row_num += 1
+    for col in data:
+        col_num += 1
 
-        row = list(row.values())
+        ws.col(col_num).width = 2000
 
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, str(row[col_num]), font_style)
+        col = list(col.values())
 
-    ws.col(0).width = 5000
-    ws.col(1).width = 7000
+        for row_num in range(len(columns)):
+            ws.write(row_num, col_num, col[row_num], font_style)
 
     # wb.save(response)
     wb.save(f'files/{filename}')
