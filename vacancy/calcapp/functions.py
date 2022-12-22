@@ -91,7 +91,7 @@ class Experiment:
             'dis': 0,
             'gr': 0,
             'tw': 0,
-            'vac': conc_rel_to_abs(CONC_REL, self.detail.metal.grid_par),
+            'vac': conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par),
         }
         self.sum_size_delta = None
         self.plot = []
