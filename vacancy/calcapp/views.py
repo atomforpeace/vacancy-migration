@@ -49,6 +49,8 @@ class CalcView(View):
             'warm_period',
             'temp_start',
             'temp_stop',
+            'time_step',
+            'conc_vac_start',
         ):
             set_dict[attr] = float(post_data.get(attr, "0"))
 

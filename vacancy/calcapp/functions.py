@@ -97,7 +97,7 @@ class Experiment:
         self.plot = []
         self.results = []
 
-        self.delta_time = 1
+        self.delta_time = self.exp_settings.time_step
 
     @property
     def conc_dis_plus(self):
@@ -331,6 +331,7 @@ class Experiment:
 
         # Расчет шага температуры
         delta_T = self.exp_settings.time_step / 60
+        print(f'delta_t {delta_T}')
 
         # Переменная номера шага для информативности
         step_count = 0

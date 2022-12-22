@@ -57,7 +57,7 @@ class ExperimentSettings(models.Model):
     warm_period = models.FloatField(verbose_name='Время нагрева на 1 К')
     temp_start = models.FloatField(verbose_name='Температура в начале эксперимента')
     temp_stop = models.FloatField(verbose_name='Температура в конце эксперимента')
-    temp_step = models.FloatField(verbose_name='Шаг в К', default=1)
+    temp_step = models.FloatField(verbose_name='Шаг в К (НЕ ИСПОЛЬЗУЕТСЯ!!)', default=1)
     time_step = models.FloatField(verbose_name='Шаг в секундах', default=60)
     conc_vac_start = models.FloatField(verbose_name='Начальная концентрация вакансий', default=4.6e-4)
 
