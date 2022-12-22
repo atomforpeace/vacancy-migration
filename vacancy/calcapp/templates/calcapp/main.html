@@ -1,5 +1,6 @@
 {% extends 'vacancy/base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 {% if figure %}
@@ -8,5 +9,29 @@
 
 <br>
 
-<a href="{% url 'download-xlsx' results %}">Скачать таблицу</a>
+<!--<a href="{#% url 'download-xlsx' results %#}">Скачать таблицу</a>-->
+
+<table class="table">
+    <thead class="thead-light">
+        <tr>
+            <th>T</th>
+            <th>Дисл</th>
+            <th>Зерна</th>
+            <th>Двойн</th>
+            <th>Вакан</th>
+        </tr>
+    </thead>
+    {% for row in results %}
+    <tr>
+        {% for key, value in row.items %}
+            {% if key == "T" %}
+                <td>{{ value|stringformat:".2f" }}</td>
+            {% else %}
+                <td>{{ value|stringformat:".4e" }}</td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+
 {% endblock %}
