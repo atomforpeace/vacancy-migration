@@ -59,16 +59,31 @@ class CalcView(View):
         detail = Detail(metal, defect)
         experiment = Experiment(detail, settings)
 
-        results, plot = experiment.start()
+        results = experiment.start_dis_only()
 
-        plot_x = [x[0] for x in plot]
-        plot_y = [y[1] for y in plot]
+        # results, plot = experiment.start()
+        #
 
-        trace = go.Scatter(x=plot_x, y=plot_y)
+        plot_x = [item['T'] for item in results]
+        plot_dis = [item['con_dis'] for item in results]
+        plot_gr = [item['con_gr'] for item in results]
+        plot_tw = [item['con_tw'] for item in results]
+        plot_vac = [item['con_vac'] for item in results]
+
+        # plot_x = [x[0] for x in results]
+        # plot_y = [y[1] for y in plot]
+
+        trace_dis = go.Scatter(x=plot_x, y=plot_dis)
+        trace_gr = go.Scatter(x=plot_x, y=plot_gr)
+        trace_tw = go.Scatter(x=plot_x, y=plot_tw)
+        trace_vac = go.Scatter(x=plot_x, y=plot_vac)
         layout = go.Layout(title="Результат", xaxis={'title': 'T'}, yaxis={'title': 'Dvt'})
-        data = go.Data([trace])
+        data = go.Data([trace_dis, trace_gr])
         figure = go.Figure()
-        figure.add_trace(go.Line(x=plot_x, y=plot_y))
+        figure.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
+        figure.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
+        figure.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
+        figure.add_trace(go.Line(x=plot_x, y=plot_vac, name="Вакансии"))
 
         context = {
             'results': results,
