@@ -387,7 +387,7 @@ class Experiment:
 
             self.results.append(
                 {
-                    'T': self.temp - delta_T,
+                    'T': self.temp,
                     'con_dis': [self.concentrations['dis'], dis_delta],
                     'con_gr': [self.concentrations['gr'], gr_delta],
                     'con_tw': [self.concentrations['tw'], tw_delta],
