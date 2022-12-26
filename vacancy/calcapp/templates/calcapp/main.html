@@ -14,10 +14,12 @@
     <thead class="thead-light">
         <tr>
             <th>T</th>
-            <th>Дисл</th>
+            <th>Дислокации</th>
             <th>Зерна</th>
-            <th>Двойн</th>
-            <th>Вакан</th>
+            <th>Двойники</th>
+            <th>Поверхность</th>
+            <th>В матрице</th>
+            <th>Сумма</th>
         </tr>
     </thead>
     {% for row in results %}
@@ -26,7 +28,9 @@
             {% if key == "T" %}
                 <td>{{ value|stringformat:".2f" }}</td>
             {% else %}
-                <td>{{ value|stringformat:".4e" }}</td>
+                <td>{{ value.0|stringformat:".4e" }}<br>
+                    <span class={% if value.1 > 0 %}"text-success">(+{% else %} "text-danger">( {% endif %}{{ value.1|stringformat:".2e" }})</span>
+                </td>
             {% endif %}
         {% endfor %}
     </tr>

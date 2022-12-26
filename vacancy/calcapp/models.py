@@ -34,9 +34,11 @@ class Defect(models.Model):
     dis_ener = models.FloatField(verbose_name='Энергия связи с дислокацией')  # Evd
     gr_ener = models.FloatField(verbose_name='Энергия связи с границей зерен')  # Evg
     tw_ener = models.FloatField(verbose_name='Энергия связи с границей двойников')  # Evt
+    surf_ener = models.FloatField(verbose_name='Энергия связи с поверхностью', default=0.85)  # Evs
     dis_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с дислокацией')  # Vd
     gr_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей зерей')  # Vg
     tw_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей двойников')  # Vt
+    surf_svol = models.FloatField(verbose_name='Удел.объем области для поверхности', default=2.2e-7)  # Vs
     clus_init_diam = models.FloatField(verbose_name='Средний начальный диаметр кластера')  # dc0
     clus_init_count = models.FloatField(verbose_name='Средний начальное кол-во  v в кластере')  # nc0
     recomb_rad = models.FloatField(verbose_name='Радиус спонтанной рекомбинации')  # eta

@@ -67,10 +67,11 @@ class CalcView(View):
         #
 
         plot_x = [item['T'] for item in results]
-        plot_dis = [item['con_dis'] for item in results]
-        plot_gr = [item['con_gr'] for item in results]
-        plot_tw = [item['con_tw'] for item in results]
-        plot_vac = [item['con_vac'] for item in results]
+        plot_dis = [item['con_dis'][0] for item in results]
+        plot_gr = [item['con_gr'][0] for item in results]
+        plot_tw = [item['con_tw'][0] for item in results]
+        plot_surf = [item['con_surf'][0] for item in results]
+        plot_vac = [item['con_vac'][0] for item in results]
 
         # plot_x = [x[0] for x in results]
         # plot_y = [y[1] for y in plot]
@@ -85,7 +86,8 @@ class CalcView(View):
         figure.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
         figure.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
         figure.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
-        figure.add_trace(go.Line(x=plot_x, y=plot_vac, name="Вакансии"))
+        figure.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
+        figure.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
 
         context = {
             'results': results,

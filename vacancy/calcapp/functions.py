@@ -91,11 +91,20 @@ class Experiment:
             'dis': 0,
             'gr': 0,
             'tw': 0,
+            'surf': 0,
             'vac': conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par),
         }
         self.sum_size_delta = None
         self.plot = []
         self.results = []
+
+        self.volumes = {
+            'dis_plus': 3 * n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2,
+            'dis_minus': n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2,
+            'tw': 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node,
+            'gr': 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node,
+            'surf': self.detail.defect.surf_svol,
+        }
 
         self.delta_time = self.exp_settings.time_step
 
@@ -106,7 +115,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
-        unit_volume = 3 * n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2
+        unit_volume = self.volumes['dis_plus']
 
         """
         n_vd = 3*pi*ro_d*a1^2*nu*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
@@ -122,7 +131,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + 0.5 * b_factor(-self.detail.defect.dis_ener, self.temp))
-        unit_volume = n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2
+        unit_volume = self.volumes['dis_minus']
 
         """
         n_vd_ = pi*ro_d*a1^2*nu*n_vd*tau*exp(-E_mv/(kT)) / (1+0.5*exp(E_vd/(kT)))
@@ -158,7 +167,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(-self.detail.defect.gr_ener, self.temp))
-        unit_volume = 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node
+        unit_volume = self.volumes['gr']
 
         """
         n_vg = 2*S_g*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
@@ -174,7 +183,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(self.detail.defect.gr_ener, self.temp))
-        unit_volume = 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node
+        unit_volume = self.volumes['gr']
 
         """
         n_vg_ = 2*S_g*a1*nu*n_g*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
@@ -190,7 +199,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
-        unit_volume = 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node
+        unit_volume = self.volumes['tw']
 
         """
         n_vg = 2*S_t*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
@@ -206,7 +215,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
-        unit_volume = 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node
+        unit_volume = self.volumes['tw']
 
         """
         n_vg_ = 2*S_t*a1*nu*n_t*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
@@ -214,6 +223,22 @@ class Experiment:
         flow_minus = unit_volume * probability * self.concentrations['tw'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
 
         return flow_minus
+
+    @property
+    def conc_surf_plus(self):
+        """
+        Приток на поверхность
+        """
+
+        probability = 1
+        unit_volume = self.volumes['surf']
+
+        """
+        n_vg = Vs*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vs/(kT)))
+        """
+        flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
+
+        return flow_plus
 
     @property
     def conc_del_tw(self):
@@ -330,14 +355,14 @@ class Experiment:
         self.temp = self.exp_settings.temp_start
 
         # Расчет шага температуры
-        delta_T = self.exp_settings.time_step / 60
+        delta_T = self.exp_settings.time_step / self.exp_settings.warm_period
         print(f'delta_t {delta_T}')
 
         # Переменная номера шага для информативности
         step_count = 0
 
         # Выполняем расчет концентраций по шагам
-        while self.temp <= self.exp_settings.temp_stop and self.concentrations["vac"] > 0:
+        while self.temp <= self.exp_settings.temp_stop and self.concentrations['vac'] > 0:
             # Расчет концентрации на дислокациях
             dis_delta = self.conc_dis_plus - self.conc_dis_minus
             self.concentrations["dis"] += dis_delta
@@ -347,23 +372,33 @@ class Experiment:
             # Расчет концентрации на двойниках
             tw_delta = self.conc_tw_plus - self.conc_tw_minus
             self.concentrations["tw"] += tw_delta
+            # Расчет концентрации на поверхности
+            surf_delta = self.conc_surf_plus
+            self.concentrations["surf"] += surf_delta
             # Расчет концентрации вакансий с учетом потоком на/с стоки
-            self.concentrations["vac"] -= dis_delta + gr_delta + tw_delta
+            vac_delta = dis_delta + gr_delta + tw_delta + surf_delta
+            self.concentrations["vac"] -= vac_delta
             # print('==========================\n')
-            self.temp += delta_T
-            step_count += 1
+
+            con_sum = self.volumes['dis_plus'] * self.concentrations['dis'] + \
+                self.volumes['gr'] * self.concentrations['gr'] + \
+                self.volumes['tw'] * self.concentrations['tw'] + \
+                self.volumes['surf'] * self.concentrations['surf']
 
             self.results.append(
                 {
-                    'T': self.temp,
-                    'con_dis': self.concentrations['dis'],
-                    'con_gr': self.concentrations['gr'],
-                    'con_tw': self.concentrations['tw'],
-                    'con_vac': self.concentrations['vac'],
+                    'T': self.temp - delta_T,
+                    'con_dis': [self.concentrations['dis'], dis_delta],
+                    'con_gr': [self.concentrations['gr'], gr_delta],
+                    'con_tw': [self.concentrations['tw'], tw_delta],
+                    'con_surf': [self.concentrations['surf'], surf_delta],
+                    'con_vac': [self.concentrations['vac'], -vac_delta],
+                    # 'con_sum': con_sum,
                 }
             )
 
-            self.plot.append(list(self.concentrations.values()))
+            self.temp += delta_T
+            step_count += 1
 
         return self.results
 
