@@ -94,8 +94,7 @@ class Experiment:
             'surf': 0,
             'vac': conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par),
         }
-        self.sum_size_delta = None
-        self.plot = []
+
         self.results = []
 
         self.volumes = {
@@ -139,26 +138,6 @@ class Experiment:
         flow_minus = unit_volume * probability * self.concentrations['dis'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
 
         return flow_minus
-
-    @property
-    def conc_del_gr(self):
-        """
-        Приток на зерна
-        """
-
-        """
-        n_vg = 2*S_g*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
-        """
-        flow_plus = 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['vac'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(-self.detail.defect.gr_ener, self.temp))
-
-        """
-        n_vg_ = 2*S_g*a1*nu*n_g*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
-        """
-        flow_minus = 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['gr'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.gr_ener, self.temp))
-
-        flow_delta = flow_plus - flow_minus  # м-3
-
-        return flow_delta
 
     @property
     def conc_gr_plus(self):
@@ -241,26 +220,6 @@ class Experiment:
         return flow_plus
 
     @property
-    def conc_del_tw(self):
-        """
-        Приток на двойники
-        """
-
-        """
-        n_vg = 2*S_t*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
-        """
-        flow_plus = 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['vac'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
-
-        """
-        n_vg_ = 2*S_t*a1*nu*n_t*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
-        """
-        flow_minus = 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node * c.DEBYE * self.concentrations['tw'] * self.exp_settings.warm_period * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.tw_ener, self.temp))
-
-        flow_delta = flow_plus - flow_minus  # м-3
-
-        return flow_delta
-
-    @property
     def conc_del_clus(self):
         """
         Приток из кластеров
@@ -287,66 +246,6 @@ class Experiment:
         return flow
 
     def start(self):
-
-        plot_x = []
-        plot_y = []
-
-        size_delta = {
-            'dis': 0,
-            'gr': 0,
-            'tw': 0,
-            'clus': 0,
-            's': 0,
-        }
-
-        t = self.exp_settings.temp_start
-
-        while t <= self.exp_settings.temp_stop:
-            # print(f'Расчет для температуры {t} K')
-            self.temp = t
-
-            del_conc = {
-                'dis': self.conc_del_dis,
-                'gr': self.conc_del_gr,
-                'tw': self.conc_del_tw,
-                'clus': self.conc_del_clus,
-            }
-
-            # print(del_conc)
-
-            for type_ in ('dis', 'gr', 'tw'):
-                self.concentrations[type_] += del_conc[type_]
-            self.concentrations['vac'] -= del_conc['dis'] + del_conc['gr'] + del_conc['tw'] - del_conc['clus']
-
-            # print(self.concentrations)
-
-            for type_ in ('dis', 'gr', 'tw', 'clus'):
-                size_delta[type_] += del_conc[type_] * self.detail.volume_delta[type_] * self.detail.volume
-
-            self.sum_size_delta = sum(size_delta.values())
-
-            self.plot.append([t, self.sum_size_delta])
-
-            # self.concentrations['vac'] -= del_conc['dis'] + del_conc['gr'] + del_conc['tw'] - del_conc['clus']
-
-            # print(self.sum_size_delta)
-
-            self.results.append(
-                {
-                    'T': self.temp,
-                    'nvd': del_conc['dis'],
-                    'nvg': del_conc['gr'],
-                    'nvt': del_conc['tw'],
-                    'nv': del_conc['clus'],
-                    'Dcv': self.sum_size_delta,
-                }
-            )
-
-            t += self.exp_settings.warm_period / 60
-
-        return export_results_to_xls(self.results), self.plot
-
-    def start_dis_only(self):
         """
         Решение задачи Коши методом Эйлера
         """
@@ -407,16 +306,13 @@ if __name__ == '__main__':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vacancy.settings')
 
     defect = get_object_or_404(Defect, pk=1)
-    # defect = model_to_dict(obj)
 
     metal = get_object_or_404(Metal, pk=1)
-    # metal = model_to_dict(obj)
 
     settings = get_object_or_404(ExperimentSettings, pk=1)
-    # settings = model_to_dict(obj)
 
     detail = Detail(metal=metal, defect=defect)
 
     experiment = Experiment(detail, settings)
 
-    plot_values = experiment.start_dis_only()
+    plot_values = experiment.start()

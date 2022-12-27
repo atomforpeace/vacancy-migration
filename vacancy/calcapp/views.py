@@ -1,7 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import View
-from django.views.generic import TemplateView
 
 import plotly.graph_objects as go
 
@@ -61,10 +60,7 @@ class CalcView(View):
         detail = Detail(metal, defect)
         experiment = Experiment(detail, settings)
 
-        results = experiment.start_dis_only()
-
-        # results, plot = experiment.start()
-        #
+        results = experiment.start()
 
         plot_x = [item['T'] for item in results]
         plot_dis = [item['con_dis'][0] for item in results]
@@ -73,15 +69,12 @@ class CalcView(View):
         plot_surf = [item['con_surf'][0] for item in results]
         plot_vac = [item['con_vac'][0] for item in results]
 
-        # plot_x = [x[0] for x in results]
-        # plot_y = [y[1] for y in plot]
-
-        trace_dis = go.Scatter(x=plot_x, y=plot_dis)
-        trace_gr = go.Scatter(x=plot_x, y=plot_gr)
-        trace_tw = go.Scatter(x=plot_x, y=plot_tw)
-        trace_vac = go.Scatter(x=plot_x, y=plot_vac)
-        layout = go.Layout(title="Результат", xaxis={'title': 'T'}, yaxis={'title': 'Dvt'})
-        data = go.Data([trace_dis, trace_gr])
+        # trace_dis = go.Scatter(x=plot_x, y=plot_dis)
+        # trace_gr = go.Scatter(x=plot_x, y=plot_gr)
+        # trace_tw = go.Scatter(x=plot_x, y=plot_tw)
+        # trace_vac = go.Scatter(x=plot_x, y=plot_vac)
+        # layout = go.Layout(title="Результат", xaxis={'title': 'T'}, yaxis={'title': 'Dvt'})
+        # data = go.Data([trace_dis, trace_gr])
         figure = go.Figure()
         figure.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
         figure.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
@@ -105,9 +98,9 @@ class CalcView(View):
         plot_x = [x[0] for x in plot]
         plot_y = [y[1] for y in plot]
 
-        trace = go.Scatter(x=plot_x, y=plot_y)
-        layout = go.Layout(title="Результат", xaxis={'title': 'T'}, yaxis={'title': 'Dvt'})
-        data = go.Data([trace])
+        # trace = go.Scatter(x=plot_x, y=plot_y)
+        # layout = go.Layout(title="Результат", xaxis={'title': 'T'}, yaxis={'title': 'Dvt'})
+        # data = go.Data([trace])
         figure = go.Figure()
         figure.add_trace(go.Line(x=plot_x, y=plot_y))
 

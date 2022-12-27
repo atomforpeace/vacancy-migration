@@ -9,7 +9,7 @@ from calcapp.models import Metal, Defect, ExperimentSettings
 class MetalUpdateForm(forms.ModelForm):
     class Meta:
         model = Metal
-        fields = "__all__"
+        exclude = ('metal_name',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -20,7 +20,7 @@ class MetalUpdateForm(forms.ModelForm):
 class DefectUpdateForm(forms.ModelForm):
     class Meta:
         model = Defect
-        fields = "__all__"
+        exclude = ('defect_name',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,7 +31,7 @@ class DefectUpdateForm(forms.ModelForm):
 class SettingsUpdateForm(forms.ModelForm):
     class Meta:
         model = ExperimentSettings
-        fields = "__all__"
+        exclude = ("set_name",)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
