@@ -10,11 +10,11 @@ class Metal(models.Model):
     Структурные характеристика металлов
     """
     metal_name = models.CharField(max_length=30, verbose_name='Имя металла')
-    gr_sarea = models.FloatField(verbose_name='Удельная площадь границ зерен')  # Sg
-    tw_sarea = models.FloatField(verbose_name='Удельная площадь границ двойников')  # St
-    dis_dens = models.FloatField(verbose_name='Плотность дислокаций')  # ro_d
-    grid_par = models.FloatField(verbose_name='Параметр решетки')  # a
-    close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла')  # a1
+    gr_sarea = models.FloatField(verbose_name='Удельная площадь границ зерен, м-1')  # Sg
+    tw_sarea = models.FloatField(verbose_name='Удельная площадь границ двойников, м-1')  # St
+    dis_dens = models.FloatField(verbose_name='Плотность дислокаций, м-2')  # ro_d
+    grid_par = models.FloatField(verbose_name='Параметр решетки, м')  # a
+    close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла, м')  # a1
 
     def __str__(self):
         return self.metal_name
@@ -29,19 +29,19 @@ class Defect(models.Model):
     Характеристики точечных дефектов
     """
     defect_name = models.CharField(max_length=30, verbose_name='Название')
-    form_ener = models.FloatField(verbose_name='Энергия образования вакансии')  # Ev
-    mig_ener = models.FloatField(verbose_name='Энергия миграции вакансии')  # Emv
-    dis_ener = models.FloatField(verbose_name='Энергия связи с дислокацией')  # Evd
-    gr_ener = models.FloatField(verbose_name='Энергия связи с границей зерен')  # Evg
-    tw_ener = models.FloatField(verbose_name='Энергия связи с границей двойников')  # Evt
-    surf_ener = models.FloatField(verbose_name='Энергия связи с поверхностью', default=0.85)  # Evs
+    form_ener = models.FloatField(verbose_name='Энергия образования вакансии, эВ')  # Ev
+    mig_ener = models.FloatField(verbose_name='Энергия миграции вакансии, эВ')  # Emv
+    dis_ener = models.FloatField(verbose_name='Энергия связи с дислокацией, эВ')  # Evd
+    gr_ener = models.FloatField(verbose_name='Энергия связи с границей зерен, эВ')  # Evg
+    tw_ener = models.FloatField(verbose_name='Энергия связи с границей двойников, эВ')  # Evt
+    surf_ener = models.FloatField(verbose_name='Энергия связи с поверхностью, эВ', default=0.85)  # Evs
     # dis_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с дислокацией')  # Vd
     # gr_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей зерей')  # Vg
     # tw_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей двойников')  # Vt
     surf_svol = models.FloatField(verbose_name='Удел.объем области для поверхности', default=2.2e-7)  # Vs
-    clus_init_diam = models.FloatField(verbose_name='Средний начальный диаметр кластера')  # dc0
-    clus_init_count = models.FloatField(verbose_name='Средний начальное кол-во  v в кластере')  # nc0
-    recomb_rad = models.FloatField(verbose_name='Радиус спонтанной рекомбинации')  # eta
+    clus_init_diam = models.FloatField(verbose_name='Средний начальный диаметр кластера, м')  # dc0
+    clus_init_count = models.FloatField(verbose_name='Среднее начальное кол-во  v в кластере')  # nc0
+    recomb_rad = models.FloatField(verbose_name='Радиус спонтанной рекомбинации, м')  # eta
 
     def __str__(self):
         return self.defect_name
@@ -56,10 +56,10 @@ class ExperimentSettings(models.Model):
     Условия эксперимента
     """
     set_name = models.CharField(max_length=30, verbose_name='Название')
-    warm_period = models.FloatField(verbose_name='Время нагрева на 1 К')
-    temp_start = models.FloatField(verbose_name='Температура в начале эксперимента')
-    temp_stop = models.FloatField(verbose_name='Температура в конце эксперимента')
-    time_step = models.FloatField(verbose_name='Шаг в секундах', default=60)
+    warm_period = models.FloatField(verbose_name='Время нагрева на 1 К, с')
+    temp_start = models.FloatField(verbose_name='Температура в начале эксперимента, К')
+    temp_stop = models.FloatField(verbose_name='Температура в конце эксперимента, К')
+    time_step = models.FloatField(verbose_name='Шаг, с', default=60)
     conc_vac_start = models.FloatField(verbose_name='Начальная концентрация вакансий', default=4.6e-4)
 
     def __str__(self):
