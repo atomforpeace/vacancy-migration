@@ -3,11 +3,12 @@
 
 {% block content %}
 <form method="post" action="/calc/">
-    {{ forms.metal.as_p }}
-    {{ forms.defect.as_p }}
-    {{ forms.settings.as_p }}
+    <div class="border border-dark rounded bg-light bg-gradient p-3 mb-3">{{ forms.metal.as_p }}</div>
+
+    <div class="border border-dark rounded bg-light bg-gradient p-3 mb-3">{{ forms.defect.as_p }}</div>
+    <div class="border border-dark rounded bg-light bg-gradient p-3 mb-3">{{ forms.settings.as_p }}</div>
     {% csrf_token %}
-    <input type="submit" value="Рассчитать">
+    <input class="btn btn-primary" type="submit" value="Рассчитать">
 </form>
 
 {% endblock %}

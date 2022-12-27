@@ -35,9 +35,9 @@ class Defect(models.Model):
     gr_ener = models.FloatField(verbose_name='Энергия связи с границей зерен')  # Evg
     tw_ener = models.FloatField(verbose_name='Энергия связи с границей двойников')  # Evt
     surf_ener = models.FloatField(verbose_name='Энергия связи с поверхностью', default=0.85)  # Evs
-    dis_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с дислокацией')  # Vd
-    gr_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей зерей')  # Vg
-    tw_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей двойников')  # Vt
+    # dis_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с дислокацией')  # Vd
+    # gr_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей зерей')  # Vg
+    # tw_svol = models.FloatField(verbose_name='Удел.объем области взаимодействия с границей двойников')  # Vt
     surf_svol = models.FloatField(verbose_name='Удел.объем области для поверхности', default=2.2e-7)  # Vs
     clus_init_diam = models.FloatField(verbose_name='Средний начальный диаметр кластера')  # dc0
     clus_init_count = models.FloatField(verbose_name='Средний начальное кол-во  v в кластере')  # nc0
@@ -59,7 +59,6 @@ class ExperimentSettings(models.Model):
     warm_period = models.FloatField(verbose_name='Время нагрева на 1 К')
     temp_start = models.FloatField(verbose_name='Температура в начале эксперимента')
     temp_stop = models.FloatField(verbose_name='Температура в конце эксперимента')
-    temp_step = models.FloatField(verbose_name='Шаг в К (НЕ ИСПОЛЬЗУЕТСЯ!!)', default=1)
     time_step = models.FloatField(verbose_name='Шаг в секундах', default=60)
     conc_vac_start = models.FloatField(verbose_name='Начальная концентрация вакансий', default=4.6e-4)
 
