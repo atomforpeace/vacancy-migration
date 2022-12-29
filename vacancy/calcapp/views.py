@@ -36,6 +36,7 @@ class CalcView(View):
             'clus_init_diam',
             'clus_init_count',
             'recomb_rad',
+            'surf_svol',
         ):
             defect_dict[attr] = float(post_data.get(attr, "0"))
 
