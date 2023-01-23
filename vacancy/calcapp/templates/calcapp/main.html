@@ -6,6 +6,30 @@
 {{ figure|safe }}
 {% endif %}
 
+<hr>
+
+{% if figure_flows_delta %}
+{{ figure_flows_delta|safe }}
+{% endif %}
+
+
+<hr>
+
+{% if figure_flows %}
+{{ figure_flows|safe }}
+{% endif %}
+
+<hr>
+
+{% if figure_probability %}
+{{ figure_probability|safe }}
+{% endif %}
+
+<hr>
+
+{% if figure_b_factor_mig %}
+{{ figure_b_factor_mig|safe }}
+{% endif %}
 <br>
 
 <!--<a href="{#% url 'download-xlsx' results %#}">Скачать таблицу</a>-->
@@ -15,10 +39,15 @@
         <tr>
             <th>T</th>
             <th>Дислокации</th>
+            <th>Дислокации+</th>
+            <th>Дислокации-</th>
             <th>Зерна</th>
             <th>Двойники</th>
             <th>Поверхность</th>
             <th>В матрице</th>
+            <th>Вероятность притока</th>
+            <th>Вероятность оттока</th>
+            <th>exp(-Emv/kT)</th>
         </tr>
     </thead>
     {% for row in results %}
@@ -27,9 +56,13 @@
             {% if key == "T" %}
                 <td>{{ value|stringformat:".2f" }}</td>
             {% else %}
+                {% if value|length > 0 %}
                 <td>{{ value.0|stringformat:".4e" }}<br>
                     <span class={% if value.1 > 0 %}"text-success">(+{% else %} "text-danger">( {% endif %}{{ value.1|stringformat:".2e" }})</span>
                 </td>
+                {% else %}
+                    <td>{{ value|stringformat:".4e" }}</td>
+                {% endif %}
             {% endif %}
         {% endfor %}
     </tr>

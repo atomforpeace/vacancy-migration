@@ -8,6 +8,10 @@ from calcapp.functions import Detail, Experiment
 from calcapp.models import Metal, Defect, ExperimentSettings
 
 
+PLOT_HEIGHT = 400
+PLOT_WIDTH = 1200
+
+
 class CalcView(View):
     template_name = 'calcapp/main.html'
 
@@ -62,28 +66,125 @@ class CalcView(View):
 
         plot_x = [item['T'] for item in results]
         plot_dis = [item['con_dis'][0] for item in results]
+        plot_dis_plus = [item['con_dis_plus'] for item in results]
+        plot_dis_minus = [item['con_dis_minus'] for item in results]
+        plot_dis_delta = [item['con_dis_plus'] - item['con_dis_minus'] for item in results]
         plot_gr = [item['con_gr'][0] for item in results]
         plot_tw = [item['con_tw'][0] for item in results]
         plot_surf = [item['con_surf'][0] for item in results]
         plot_vac = [item['con_vac'][0] for item in results]
+        plot_prob_plus = [item['prob_plus'] for item in results]
+        plot_prob_minus = [item['prob_minus'] for item in results]
+        plot_b_factor_mig_plus = [item['b_factor_mig_plus'] for item in results]
+        plot_b_factor_prob_plus = [item['b_factor_mig_plus'] * item['prob_plus'] for item in results]
 
-        # trace_dis = go.Scatter(x=plot_x, y=plot_dis)
-        # trace_gr = go.Scatter(x=plot_x, y=plot_gr)
-        # trace_tw = go.Scatter(x=plot_x, y=plot_tw)
-        # trace_vac = go.Scatter(x=plot_x, y=plot_vac)
-        # layout = go.Layout(title="Результат", xaxis={'title': 'T'}, yaxis={'title': 'Dvt'})
-        # data = go.Data([trace_dis, trace_gr])
         figure = go.Figure()
         figure.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
         figure.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
         figure.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
         figure.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
         figure.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
+        figure.update_layout(
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.2,
+                xanchor="left",
+                x=0.01
+            )
+        )
+
+        figure_flows = go.Figure()
+        figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_plus, name="На дислокации"))
+        figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_minus, name="С дислокаций"))
+        figure_flows.update_layout(
+            title="Потоки на/с дислокаций",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            )
+        )
+
+        figure_flows_delta = go.Figure()
+        figure_flows_delta.add_trace(go.Line(x=plot_x, y=plot_dis_delta, name="Дельта на дислокациях"))
+        figure_flows_delta.update_layout(
+            title="Разница дислокаций",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            )
+        )
+
+        figure_probability = go.Figure()
+        figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_plus, name="Вероятность притока на дислокации"))
+        figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_minus, name="Вероятность оттока с дислокаций"))
+        figure_probability.update_layout(
+            title="Вероятности",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            ),
+        )
+
+        figure_b_factor_mig = go.Figure()
+        figure_b_factor_mig.add_trace(go.Line(x=plot_x, y=plot_b_factor_mig_plus, name="exp(-Emv/kT)"))
+        figure_b_factor_mig.update_yaxes(exponentformat="E")
+        figure_b_factor_mig.update_layout(
+            title="exp(-Emv/kT)",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            ),
+        )
+
+        # figure_b_factor_prob = go.Figure()
+        # figure_b_factor_prob.add_trace(go.Line(x=plot_x, y=plot_b_factor_prob_plus, name="Множитель+"))
+        # figure_b_factor_prob.add_trace(go.Line(x=plot_x, y=plot_b_factor_prob_minus, name="Множитель-"))
+        # figure_b_factor_prob.update_layout(
+        #     title="Множитель без концентраций",
+        #     height=PLOT_HEIGHT,
+        #     width=PLOT_WIDTH,
+        #     legend=dict(
+        #         orientation="h",
+        #         yanchor="bottom",
+        #         y=-0.1,
+        #         xanchor="left",
+        #         x=0.01
+        #     ),
+        # )
 
         context = {
             'results': results,
             'figure': figure.to_html(),
+            'figure_flows': figure_flows.to_html(),
+            'figure_flows_delta': figure_flows_delta.to_html(),
+            'figure_probability': figure_probability.to_html(),
+            'figure_b_factor_mig': figure_b_factor_mig.to_html(),
+            # 'figure_b_factor_prob': figure_b_factor_prob.to_html(),
         }
+        print(results)
 
         return render(request, self.template_name, context)
 

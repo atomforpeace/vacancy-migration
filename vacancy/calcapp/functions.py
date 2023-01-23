@@ -95,6 +95,8 @@ class Experiment:
             'vac': conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par),
         }
 
+        self.conc_const = conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par)
+
         self.results = []
 
         self.volumes = {
@@ -108,6 +110,24 @@ class Experiment:
         self.delta_time = self.exp_settings.time_step
 
     @property
+    def conc_vac_delta(self):
+        """
+        Изменение в матрицах
+        """
+
+        probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
+        unit_volume = self.volumes['dis_plus']
+
+        """
+        n_vd = 3*pi*ro_d*a1^2*nu*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
+        """
+
+        flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
+        # flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
+
+        return flow_plus
+
+    @property
     def conc_dis_plus(self):
         """
         Приток на дислокации
@@ -119,6 +139,8 @@ class Experiment:
         """
         n_vd = 3*pi*ro_d*a1^2*nu*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
         """
+
+        # flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
         flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
 
         return flow_plus
@@ -264,7 +286,18 @@ class Experiment:
         while self.temp <= self.exp_settings.temp_stop and self.concentrations['vac'] > 0:
             # Расчет концентрации на дислокациях
             dis_delta = self.conc_dis_plus - self.conc_dis_minus
+            conc_dis_plus = self.conc_dis_plus
+            conc_dis_minus = self.conc_dis_minus
+            # b_factor_mig_minus = b_factor(-self.detail.defect.mig_ener, self.temp) * self.volumes['dis_minus'] * c.DEBYE * self.delta_time * self.concentrations["dis"]
+
+            b_factor_mig_plus = b_factor(-self.detail.defect.mig_ener, self.temp)
+            # b_factor_mig_plus = b_factor(-self.detail.defect.mig_ener, self.temp) * self.volumes[
+            #     'dis_plus'] * c.DEBYE * self.delta_time * self.conc_const
             self.concentrations["dis"] += dis_delta
+            prob_plus = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
+            prob_minus = 1 / (1 + 0.5 * b_factor(-self.detail.defect.dis_ener, self.temp))
+
+
             # Расчет концентрации на зернах
             gr_delta = self.conc_gr_plus - self.conc_gr_minus
             self.concentrations["gr"] += gr_delta
@@ -277,6 +310,7 @@ class Experiment:
             # Расчет концентрации вакансий с учетом потоком на/с стоки
             vac_delta = dis_delta + gr_delta + tw_delta + surf_delta
             self.concentrations["vac"] -= vac_delta
+
             # print('==========================\n')
 
             con_sum = self.volumes['dis_plus'] * self.concentrations['dis'] + \
@@ -288,11 +322,15 @@ class Experiment:
                 {
                     'T': self.temp,
                     'con_dis': [self.concentrations['dis'], dis_delta],
+                    'con_dis_plus': conc_dis_plus,
+                    'con_dis_minus': conc_dis_minus,
                     'con_gr': [self.concentrations['gr'], gr_delta],
                     'con_tw': [self.concentrations['tw'], tw_delta],
                     'con_surf': [self.concentrations['surf'], surf_delta],
                     'con_vac': [self.concentrations['vac'], -vac_delta],
-                    # 'con_sum': con_sum,
+                    'prob_plus': prob_plus,
+                    'prob_minus': prob_minus,
+                    'b_factor_mig_plus': b_factor_mig_plus,
                 }
             )
 
