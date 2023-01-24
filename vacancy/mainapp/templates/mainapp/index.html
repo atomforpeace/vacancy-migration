@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<div class="col-lg-8">
 <form method="post" action="/calc/">
     <div class="border border-dark rounded bg-light bg-gradient p-3 mb-3">{{ forms.metal.as_p }}</div>
 
@@ -9,6 +10,7 @@
     <div class="border border-dark rounded bg-light bg-gradient p-3 mb-3">{{ forms.settings.as_p }}</div>
     {% csrf_token %}
     <input class="btn btn-primary" type="submit" value="Рассчитать">
+    <input class="btn btn-info" type="submit" formaction="{% url 'update' pk=1 %}" value="Сохранить">
 </form>
-
+</div>
 {% endblock %}

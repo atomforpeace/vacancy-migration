@@ -39,6 +39,13 @@ class SettingsUpdateForm(forms.ModelForm):
             field.widget.attrs["class"] = "form-control"
 
 
+class MultiUpdateForm(forms.Form):
+    form1 = MetalUpdateForm(prefix='form1')
+    form2 = DefectUpdateForm(prefix='form2')
+    form3 = SettingsUpdateForm(prefix='form3')
+
+
+
 class MultiFormMixin(ContextMixin):
     form_classes = {}
     prefixes = {}

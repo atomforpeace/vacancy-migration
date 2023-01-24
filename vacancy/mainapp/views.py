@@ -1,6 +1,6 @@
-from django.shortcuts import render, get_object_or_404
-from django.views import View
-from django.views.generic import DetailView, CreateView, FormView, TemplateView
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -37,3 +37,17 @@ class SetExperimentData(MultiFormsView):
     def get_settings_initial(self):
         obj = get_object_or_404(ExperimentSettings, pk=1)
         return model_to_dict(obj)
+
+
+def update_form(request, pk):
+    metal = get_object_or_404(Metal, pk=pk)
+    defect = get_object_or_404(Defect, pk=pk)
+    settings = get_object_or_404(ExperimentSettings, pk=pk)
+    metal_form = MetalUpdateForm(request.POST, instance=metal)
+    defect_form = DefectUpdateForm(request.POST, instance=defect)
+    settings_form = SettingsUpdateForm(request.POST, instance=settings)
+    if metal_form.is_valid() and defect_form.is_valid() and settings_form.is_valid():
+        metal_form.save()
+        defect_form.save()
+        settings_form.save()
+    return HttpResponseRedirect('/')
