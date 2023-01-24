@@ -56,3 +56,10 @@ def export_results_to_xls(data):
 
     # return FileResponse(f, as_attachment=True, filename='results.xlsx')
     return filename
+
+
+def filter_results(results: list, excluded: list):
+    for item in results:
+        for excluded_item in excluded:
+            item.pop(excluded_item, None)
+    return results

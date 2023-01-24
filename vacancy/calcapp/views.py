@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 
 from calcapp.functions import Detail, Experiment
 from calcapp.models import Metal, Defect, ExperimentSettings
+from calcapp.utils import filter_results
 
 
 PLOT_HEIGHT = 400
@@ -76,7 +77,6 @@ class CalcView(View):
         plot_prob_plus = [item['prob_plus'] for item in results]
         plot_prob_minus = [item['prob_minus'] for item in results]
         plot_b_factor_mig_plus = [item['b_factor_mig_plus'] for item in results]
-        plot_b_factor_prob_plus = [item['b_factor_mig_plus'] * item['prob_plus'] for item in results]
 
         figure = go.Figure()
         figure.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
@@ -106,7 +106,7 @@ class CalcView(View):
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=-0.1,
+                y=-0.2,
                 xanchor="left",
                 x=0.01
             )
@@ -115,7 +115,7 @@ class CalcView(View):
         figure_flows_delta = go.Figure()
         figure_flows_delta.add_trace(go.Line(x=plot_x, y=plot_dis_delta, name="Дельта на дислокациях"))
         figure_flows_delta.update_layout(
-            title="Разница дислокаций",
+            title="Дельта потоков на дислокациях",
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
             legend=dict(
@@ -137,7 +137,7 @@ class CalcView(View):
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=-0.1,
+                y=-0.2,
                 xanchor="left",
                 x=0.01
             ),
@@ -175,6 +175,8 @@ class CalcView(View):
         #     ),
         # )
 
+        results = filter_results(results, excluded=['prob_plus', 'prob_minus'])
+
         context = {
             'results': results,
             'figure': figure.to_html(),
@@ -184,7 +186,7 @@ class CalcView(View):
             'figure_b_factor_mig': figure_b_factor_mig.to_html(),
             # 'figure_b_factor_prob': figure_b_factor_prob.to_html(),
         }
-        print(results)
+        # print(results)
 
         return render(request, self.template_name, context)
 

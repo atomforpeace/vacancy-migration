@@ -110,24 +110,6 @@ class Experiment:
         self.delta_time = self.exp_settings.time_step
 
     @property
-    def conc_vac_delta(self):
-        """
-        Изменение в матрицах
-        """
-
-        probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
-        unit_volume = self.volumes['dis_plus']
-
-        """
-        n_vd = 3*pi*ro_d*a1^2*nu*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
-        """
-
-        flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-        # flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-
-        return flow_plus
-
-    @property
     def conc_dis_plus(self):
         """
         Приток на дислокации
@@ -141,7 +123,7 @@ class Experiment:
         """
 
         # flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-        flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
+        flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp + 100)
 
         return flow_plus
 
@@ -157,7 +139,7 @@ class Experiment:
         """
         n_vd_ = pi*ro_d*a1^2*nu*n_vd*tau*exp(-E_mv/(kT)) / (1+0.5*exp(E_vd/(kT)))
         """
-        flow_minus = unit_volume * probability * self.concentrations['dis'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
+        flow_minus = unit_volume * probability * self.concentrations['dis'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp + 100)
 
         return flow_minus
 
