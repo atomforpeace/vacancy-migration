@@ -1,6 +1,5 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django_tex.shortcuts import render_to_pdf
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -52,9 +51,3 @@ def update_form(request, pk):
         defect_form.save()
         settings_form.save()
     return HttpResponseRedirect('/')
-
-
-def formulas_view(request):
-    template_name = 'mainapp/formulas.tex'
-    context = {'foo': 'Bar'}
-    return render_to_pdf(request, template_name, context, filename='test.pdf')
