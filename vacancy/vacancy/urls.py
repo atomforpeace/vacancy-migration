@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from authapp.forms import AdminLoginForm
 from calcapp.utils import export_results_to_xls
 from calcapp.views import CalcView, download_xlsx
-from mainapp.views import ListMetalApi, SetExperimentData, update_form
+from mainapp.views import ListMetalApi, SetExperimentData, update_form, formulas_view
 
 admin.autodiscover()
 admin.site.login_form = AdminLoginForm
@@ -25,6 +25,7 @@ urlpatterns = [
     path('calc/', CalcView.as_view(), name='calc'),
     path('update/<int:pk>/', update_form, name='update'),
     path('download/<str:path>', download_xlsx, name='download-xlsx'),
+    path('formulas/', TemplateView.as_view(template_name='mainapp/formulas.html'), name='formulas'),
     path('api-auth/', include('rest_framework.urls'))
 
 ]
