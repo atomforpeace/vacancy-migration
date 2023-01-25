@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'captcha',
     'rest_framework',
+    'latexify',
 
     'authapp',
     'mainapp',

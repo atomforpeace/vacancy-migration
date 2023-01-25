@@ -1,0 +1,11 @@
+{% extends 'vacancy/base.html' %}
+{% load static %}
+{% load latexify %}
+
+{% block content %}
+<p class="fs-3">
+{% latexify context_arg %}
+{% latexify context_arg parse_math=True %}
+{% latexify 'n_{vd_k} = n_{vd_{k-1}} + \Delta t \cdot \pi \cdot \rho _d \cdot a_1^2 \cdot \nu \cdot n_{v_{k-1}} \cdot e^{\frac{-E_{mv}}{k \cdot T}} \cdot \left(\frac{3 \cdot n_{v_{k-1}}}{1 + 2 \cdot e^{\frac{-E_{vd}}{k \cdot T}}} - \frac{n_{vd_{k-1}}}{1+0.5\cdot e^{\frac{-E_{vd}}{k \cdot T}}}\right)' math_block=True %}
+</p>
+{% endblock %}
