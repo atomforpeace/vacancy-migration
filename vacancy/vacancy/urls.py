@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from authapp.forms import AdminLoginForm
 from calcapp.utils import export_results_to_xls
 from calcapp.views import CalcView, download_xlsx
-from mainapp.views import ListMetalApi, SetExperimentData, update_form, formulas_view
+from mainapp.views import ListMetalApi, SetExperimentData, update_form
 
 admin.autodiscover()
 admin.site.login_form = AdminLoginForm
