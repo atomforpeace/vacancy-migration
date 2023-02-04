@@ -10,9 +10,9 @@ class SiteUserLoginForm(AuthenticationForm):
     """
     Форма аутентификации
     """
-    captcha = ReCaptchaField(
-        widget=ReCaptchaV2Checkbox, label="Подтвердите, что вы не робот!"
-    )
+    # captcha = ReCaptchaField(
+    #     widget=ReCaptchaV2Checkbox, label="Подтвердите, что вы не робот!"
+    # )
 
     class Meta:
         model = SiteUser
@@ -28,9 +28,9 @@ class SiteUserLoginForm(AuthenticationForm):
 
 
 class AdminLoginForm(AuthenticationForm):
-    captcha = ReCaptchaField(
-        widget=ReCaptchaV2Checkbox, label="Подтвердите что вы не робот!"
-    )
+    # captcha = ReCaptchaField(
+    #     widget=ReCaptchaV2Checkbox, label="Подтвердите что вы не робот!"
+    # )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,9 +43,9 @@ class SiteUserRegistrationForm(UserCreationForm):
     """
     Форма регистрации
     """
-    captcha = ReCaptchaField(
-        widget=ReCaptchaV2Checkbox, label="Подтвердите что вы не робот!"
-    )
+    # captcha = ReCaptchaField(
+    #     widget=ReCaptchaV2Checkbox, label="Подтвердите что вы не робот!"
+    # )
 
     class Meta:
         model = SiteUser
