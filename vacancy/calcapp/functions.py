@@ -197,7 +197,7 @@ class Experiment:
         Отток с двойников
         """
 
-        probability = 1 / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
+        probability = 1 / (1 + b_factor(self.detail.defect.tw_ener, self.temp))
         unit_volume = self.volumes['tw']
 
         """
@@ -265,7 +265,7 @@ class Experiment:
         step_count = 0
 
         # Выполняем расчет концентраций по шагам
-        while self.temp <= self.exp_settings.temp_stop and self.concentrations['vac'] > 0:
+        while self.temp <= self.exp_settings.temp_stop:
             # Расчет концентрации на дислокациях
 
             conc_dis_plus = self.conc_dis_plus
