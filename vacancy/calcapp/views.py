@@ -52,6 +52,7 @@ class CalcView(View):
             'temp_start',
             'temp_stop',
             'time_step',
+            'time_stop',
             'conc_vac_start',
         ):
             set_dict[attr] = float(post_data.get(attr, "0"))
@@ -65,7 +66,8 @@ class CalcView(View):
 
         results = experiment.start()
 
-        plot_x = [item['T'] for item in results]
+        plot_x = [item['time'] for item in results]
+        plot_T = [item['T'] for item in results]
         plot_dis = [item['con_dis'][0] for item in results]
         plot_dis_plus = [item['con_dis_plus'] for item in results]
         plot_dis_minus = [item['con_dis_minus'] for item in results]
@@ -78,13 +80,27 @@ class CalcView(View):
         plot_prob_minus = [item['prob_minus'] for item in results]
         plot_b_factor_mig_plus = [item['b_factor_mig_plus'] for item in results]
 
-        figure = go.Figure()
-        figure.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
-        figure.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
-        figure.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
-        figure.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
-        figure.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
-        figure.update_layout(
+        figure_temp = go.Figure()
+        figure_temp.add_trace(go.Line(x=plot_x, y=plot_T, name="Температура"))
+        figure_temp.update_layout(
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.2,
+                xanchor="left",
+                x=0.01
+            )
+        )
+
+        figure_vac = go.Figure()
+        figure_vac.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
+        figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
+        figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
+        figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
+        figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
+        figure_vac.update_layout(
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
             legend=dict(
@@ -99,6 +115,7 @@ class CalcView(View):
         figure_flows = go.Figure()
         figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_plus, name="На дислокации"))
         figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_minus, name="С дислокаций"))
+        figure_flows.update_yaxes(exponentformat="E")
         figure_flows.update_layout(
             title="Потоки на/с дислокаций",
             height=PLOT_HEIGHT,
@@ -179,7 +196,8 @@ class CalcView(View):
 
         context = {
             'results': results,
-            'figure': figure.to_html(),
+            'figure_temp': figure_temp.to_html(),
+            'figure_vac': figure_vac.to_html(),
             'figure_flows': figure_flows.to_html(),
             'figure_flows_delta': figure_flows_delta.to_html(),
             'figure_probability': figure_probability.to_html(),

@@ -6,7 +6,7 @@
 <p class="fs-3">
 {% latexify context_arg %}
 {% latexify context_arg parse_math=True %}
-{% latexify 'n_{vd_k} = n_{vd_{k-1}} + \Delta t \cdot \pi \cdot \rho _d \cdot a_1^2 \cdot \nu \cdot e^{\frac{-E_{mv}}{k \cdot T}} \cdot \left(\frac{3 \cdot n_{v_{k-1}}}{1 + 2 \cdot e^{\frac{-E_{vd}}{k \cdot T}}} - \frac{n_{vd_{k-1}}}{1+0.5\cdot e^{\frac{E_{vd}}{k \cdot T}}}\right)' math_block=True %}
+{% latexify 'n_{vd_k} = n_{vd_{k-1}} + \Delta t \cdot \pi \cdot a_1^2 \cdot \nu \cdot e^{\frac{-E_{mv}}{k \cdot T}} \cdot \left(\frac{3 \cdot n_{v_{k-1}}}{1 + 2 \cdot e^{\frac{-E_{vd}}{k \cdot T}}} - \frac{\rho _d \cdot n_{vd_{k-1}}}{1+0.5\cdot e^{\frac{E_{vd}}{k \cdot T}}}\right)' math_block=True %}
 {% latexify 'n_{vs_k} = n_{vs_{k-1}} + \Delta t \cdot \left(\frac{ n_{v_{k-1}} \cdot V_{s}  \cdot \nu }{1 + e^{\frac{-E_{vs}}{k \cdot T}}} \right) \cdot e^{\frac{-E_{mv}}{k \cdot T}} ' math_block=True %}
 </p>
 {% endblock %}

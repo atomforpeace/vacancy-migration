@@ -85,7 +85,10 @@ class Experiment:
     def __init__(self, detail, exp_settings):
         self.detail = detail
         self.exp_settings = exp_settings
+
+        # Устанавливаем температуру равной начальной из БД
         self.temp = self.exp_settings.temp_start
+
         self.rel_volume_clus = NV1C
         self.concentrations = {
             'dis': 0,
@@ -100,14 +103,17 @@ class Experiment:
         self.results = []
 
         self.volumes = {
-            'dis_plus': 3 * n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2,
-            'dis_minus': n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2,
-            'tw': 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node,
-            'gr': 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node,
-            'surf': self.detail.defect.surf_svol,
+            'dis_plus': 3 * n.pi * self.detail.metal.close_node ** 2,  # м2
+            'dis_minus': n.pi * self.detail.metal.dis_dens * self.detail.metal.close_node ** 2,  # б/р
+            'tw_plus': 2 * self.detail.metal.close_node,  # м
+            'tw_minus': 2 * self.detail.metal.tw_sarea * self.detail.metal.close_node,  # б/р
+            'gr_plus': 2 * self.detail.metal.close_node,  # м
+            'gr_minus': 2 * self.detail.metal.gr_sarea * self.detail.metal.close_node,  # б/р
+            'surf': self.detail.defect.surf_svol,  #
         }
 
         self.delta_time = self.exp_settings.time_step
+        self.current_time = 0
 
     @property
     def conc_dis_plus(self):
@@ -150,7 +156,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(-self.detail.defect.gr_ener, self.temp))
-        unit_volume = self.volumes['gr']
+        unit_volume = self.volumes['gr_plus']
 
         """
         n_vg = 2*S_g*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
@@ -166,7 +172,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(self.detail.defect.gr_ener, self.temp))
-        unit_volume = self.volumes['gr']
+        unit_volume = self.volumes['gr_minus']
 
         """
         n_vg_ = 2*S_g*a1*nu*n_g*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
@@ -182,7 +188,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(-self.detail.defect.tw_ener, self.temp))
-        unit_volume = self.volumes['tw']
+        unit_volume = self.volumes['tw_plus']
 
         """
         n_vg = 2*S_t*a1*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
@@ -198,7 +204,7 @@ class Experiment:
         """
 
         probability = 1 / (1 + b_factor(self.detail.defect.tw_ener, self.temp))
-        unit_volume = self.volumes['tw']
+        unit_volume = self.volumes['tw_minus']
 
         """
         n_vg_ = 2*S_t*a1*nu*n_t*tau*exp(-E_mv/(kT)) / (1+exp(E_vg/(kT)))
@@ -254,18 +260,15 @@ class Experiment:
         Решение задачи Коши методом Эйлера
         """
 
-        # Устанавливаем температуру равной начальной из БД
-        self.temp = self.exp_settings.temp_start
-
         # Расчет шага температуры
         delta_T = self.exp_settings.time_step / self.exp_settings.warm_period
         print(f'delta_t {delta_T}')
 
         # Переменная номера шага для информативности
-        step_count = 0
+        _step_count = 0
 
         # Выполняем расчет концентраций по шагам
-        while self.temp <= self.exp_settings.temp_stop:
+        while self.current_time <= self.exp_settings.time_stop * 60:
             # Расчет концентрации на дислокациях
 
             conc_dis_plus = self.conc_dis_plus
@@ -293,6 +296,7 @@ class Experiment:
 
             self.results.append(
                 {
+                    'time': round(self.current_time / 60),
                     'T': self.temp,
                     'con_dis': [self.concentrations['dis'], dis_delta],
                     'con_dis_plus': conc_dis_plus,
@@ -307,8 +311,10 @@ class Experiment:
                 }
             )
 
-            self.temp += delta_T
-            step_count += 1
+            if self.temp < self.exp_settings.temp_stop:
+                self.temp += delta_T
+            _step_count += 1
+            self.current_time += self.delta_time
 
         return self.results
 
