@@ -83,6 +83,7 @@ class CalcView(View):
         figure_temp = go.Figure()
         figure_temp.add_trace(go.Line(x=plot_x, y=plot_T, name="Температура"))
         figure_temp.update_layout(
+            title="Рост температуры",
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
             legend=dict(
@@ -93,6 +94,7 @@ class CalcView(View):
                 x=0.01
             )
         )
+        figure_temp.update_xaxes(title="Время, мин")
 
         figure_vac = go.Figure()
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
@@ -101,16 +103,18 @@ class CalcView(View):
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
         figure_vac.update_layout(
+            title="Вакансии",
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=-0.2,
+                y=-0.4,
                 xanchor="left",
                 x=0.01
             )
         )
+        figure_vac.update_xaxes(title="Время, мин")
 
         figure_flows = go.Figure()
         figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_plus, name="На дислокации"))
@@ -128,6 +132,7 @@ class CalcView(View):
                 x=0.01
             )
         )
+        figure_flows.update_xaxes(title="Время, мин")
 
         figure_flows_delta = go.Figure()
         figure_flows_delta.add_trace(go.Line(x=plot_x, y=plot_dis_delta, name="Дельта на дислокациях"))
@@ -143,6 +148,7 @@ class CalcView(View):
                 x=0.01
             )
         )
+        figure_flows_delta.update_xaxes(title="Время, мин")
 
         figure_probability = go.Figure()
         figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_plus, name="Вероятность притока на дислокации"))
@@ -159,6 +165,7 @@ class CalcView(View):
                 x=0.01
             ),
         )
+        figure_probability.update_xaxes(title="Время, мин")
 
         figure_b_factor_mig = go.Figure()
         figure_b_factor_mig.add_trace(go.Line(x=plot_x, y=plot_b_factor_mig_plus, name="exp(-Emv/kT)"))
@@ -175,6 +182,7 @@ class CalcView(View):
                 x=0.01
             ),
         )
+        figure_b_factor_mig.update_xaxes(title="Время, мин")
 
         # figure_b_factor_prob = go.Figure()
         # figure_b_factor_prob.add_trace(go.Line(x=plot_x, y=plot_b_factor_prob_plus, name="Множитель+"))
