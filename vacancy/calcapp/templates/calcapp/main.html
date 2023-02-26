@@ -2,8 +2,14 @@
 {% load static %}
 
 {% block content %}
-{% if figure %}
-{{ figure|safe }}
+{% if figure_temp %}
+{{ figure_temp|safe }}
+{% endif %}
+
+<hr>
+
+{% if figure_vac %}
+{{ figure_vac|safe }}
 {% endif %}
 
 <hr>
@@ -37,6 +43,7 @@
 <table class="table">
     <thead class="thead-light">
         <tr>
+            <th>Время</th>
             <th>T</th>
             <th>Дислокации</th>
             <th>Дислокации+</th>
