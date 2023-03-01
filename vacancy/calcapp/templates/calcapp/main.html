@@ -2,11 +2,6 @@
 {% load static %}
 
 {% block content %}
-{% if figure_temp %}
-{{ figure_temp|safe }}
-{% endif %}
-
-<hr>
 
 {% if figure_vac %}
 {{ figure_vac|safe }}
@@ -14,10 +9,33 @@
 
 <hr>
 
-{% if figure_flows_delta %}
-{{ figure_flows_delta|safe }}
+{% if figure_temp %}
+{{ figure_temp|safe }}
 {% endif %}
 
+<!--<hr>-->
+
+<!--{% if figure_flows_delta %}-->
+<!--{{ figure_flows_delta|safe }}-->
+<!--{% endif %}-->
+
+<hr>
+
+{% if figure_matrix %}
+{{ figure_matrix|safe }}
+{% endif %}
+
+<hr>
+
+{% if figure_dis %}
+{{ figure_dis|safe }}
+{% endif %}
+
+<hr>
+
+{% if figure_surf %}
+{{ figure_surf|safe }}
+{% endif %}
 
 <hr>
 
@@ -48,11 +66,11 @@
             <th>Дислокации</th>
             <th>Дислокации+</th>
             <th>Дислокации-</th>
-            <th>Зерна</th>
-            <th>Двойники</th>
+<!--            <th>Зерна</th>-->
+<!--            <th>Двойники</th>-->
             <th>Поверхность</th>
             <th>В матрице</th>
-            <th>exp(-Emv/kT)</th>
+<!--            <th>exp(-Emv/kT)</th>-->
         </tr>
     </thead>
     {% for row in results %}
@@ -60,6 +78,8 @@
         {% for key, value in row.items %}
             {% if key == "T" %}
                 <td>{{ value|stringformat:".2f" }}</td>
+            {% elif key == "time" %}
+                <td>{{ value|stringformat:".0f" }}</td>
             {% else %}
                 {% if value|length > 0 %}
                 <td>{{ value.0|stringformat:".4e" }}<br>
