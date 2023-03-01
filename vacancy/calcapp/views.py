@@ -78,8 +78,8 @@ class CalcView(View):
         plot_vac = [item['con_vac'][0] for item in results]
         plot_prob_plus = [item['prob_plus'] for item in results]
         plot_prob_minus = [item['prob_minus'] for item in results]
-        plot_b_factor_mig_plus = [item['b_factor_mig_plus'] for item in results]
 
+        # Температура
         figure_temp = go.Figure()
         figure_temp.add_trace(go.Line(x=plot_x, y=plot_T, name="Температура"))
         figure_temp.update_layout(
@@ -96,6 +96,7 @@ class CalcView(View):
         )
         figure_temp.update_xaxes(title="Время, мин")
 
+        # Все концентрации
         figure_vac = go.Figure()
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
@@ -116,6 +117,70 @@ class CalcView(View):
         )
         figure_vac.update_xaxes(title="Время, мин")
 
+        # Дислокации
+        figure_dis = go.Figure()
+        figure_dis.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
+        figure_dis.update_layout(
+            title="Дислокации",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.4,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_dis.update_xaxes(title="Время, мин")
+
+        # Матрица
+        figure_matrix = go.Figure()
+        # figure_matrix.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
+        figure_matrix.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
+        figure_matrix.update_layout(
+            title="Матрица",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.4,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_matrix.update_xaxes(title="Время, мин")
+
+        # Поверхность
+        figure_surf = go.Figure()
+        # figure_surf.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
+        figure_surf.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
+        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
+        figure_surf.update_layout(
+            title="Поверхность",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.4,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_surf.update_xaxes(title="Время, мин")
+
+        # Потоки дислокаций
         figure_flows = go.Figure()
         figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_plus, name="На дислокации"))
         figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_minus, name="С дислокаций"))
@@ -134,6 +199,7 @@ class CalcView(View):
         )
         figure_flows.update_xaxes(title="Время, мин")
 
+        # Дельта дислокаций
         figure_flows_delta = go.Figure()
         figure_flows_delta.add_trace(go.Line(x=plot_x, y=plot_dis_delta, name="Дельта на дислокациях"))
         figure_flows_delta.update_layout(
@@ -150,6 +216,7 @@ class CalcView(View):
         )
         figure_flows_delta.update_xaxes(title="Время, мин")
 
+        # Вероятности
         figure_probability = go.Figure()
         figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_plus, name="Вероятность притока на дислокации"))
         figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_minus, name="Вероятность оттока с дислокаций"))
@@ -167,22 +234,6 @@ class CalcView(View):
         )
         figure_probability.update_xaxes(title="Время, мин")
 
-        figure_b_factor_mig = go.Figure()
-        figure_b_factor_mig.add_trace(go.Line(x=plot_x, y=plot_b_factor_mig_plus, name="exp(-Emv/kT)"))
-        figure_b_factor_mig.update_yaxes(exponentformat="E")
-        figure_b_factor_mig.update_layout(
-            title="exp(-Emv/kT)",
-            height=PLOT_HEIGHT,
-            width=PLOT_WIDTH,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.1,
-                xanchor="left",
-                x=0.01
-            ),
-        )
-        figure_b_factor_mig.update_xaxes(title="Время, мин")
 
         # figure_b_factor_prob = go.Figure()
         # figure_b_factor_prob.add_trace(go.Line(x=plot_x, y=plot_b_factor_prob_plus, name="Множитель+"))
@@ -200,7 +251,7 @@ class CalcView(View):
         #     ),
         # )
 
-        results = filter_results(results, excluded=['prob_plus', 'prob_minus'])
+        results = filter_results(results, excluded=['prob_plus', 'prob_minus', 'con_gr', 'con_tw'])
 
         context = {
             'results': results,
@@ -209,7 +260,9 @@ class CalcView(View):
             'figure_flows': figure_flows.to_html(),
             'figure_flows_delta': figure_flows_delta.to_html(),
             'figure_probability': figure_probability.to_html(),
-            'figure_b_factor_mig': figure_b_factor_mig.to_html(),
+            'figure_dis': figure_dis.to_html(),
+            'figure_matrix': figure_matrix.to_html(),
+            'figure_surf': figure_surf.to_html(),
             # 'figure_b_factor_prob': figure_b_factor_prob.to_html(),
         }
         # print(results)
