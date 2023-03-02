@@ -63,3 +63,7 @@ def filter_results(results: list, excluded: list):
         for excluded_item in excluded:
             item.pop(excluded_item, None)
     return results
+
+
+def time_to_str(time_, delta_time):
+    return f"{time_ + 1} - {time_ + delta_time}"

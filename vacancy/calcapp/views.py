@@ -69,6 +69,7 @@ class CalcView(View):
         plot_x = [item['time'] for item in results]
         plot_T = [item['T'] for item in results]
         plot_dis = [item['con_dis'][0] for item in results]
+        plot_dis_delta = [item['con_dis'][1] for item in results]
         plot_dis_plus = [item['con_dis_plus'] for item in results]
         plot_dis_minus = [item['con_dis_minus'] for item in results]
         plot_dis_delta = [item['con_dis_plus'] - item['con_dis_minus'] for item in results]
@@ -78,6 +79,8 @@ class CalcView(View):
         plot_vac = [item['con_vac'][0] for item in results]
         plot_prob_plus = [item['prob_plus'] for item in results]
         plot_prob_minus = [item['prob_minus'] for item in results]
+        plot_clean_delta = [item['clean_delta'] for item in results]
+        # b_factor = [item['b_factor'] for item in results]
 
         # Температура
         figure_temp = go.Figure()
@@ -120,10 +123,6 @@ class CalcView(View):
         # Дислокации
         figure_dis = go.Figure()
         figure_dis.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
         figure_dis.update_layout(
             title="Дислокации",
             height=PLOT_HEIGHT,
@@ -140,10 +139,6 @@ class CalcView(View):
 
         # Матрица
         figure_matrix = go.Figure()
-        # figure_matrix.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
         figure_matrix.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
         figure_matrix.update_layout(
             title="Матрица",
@@ -161,11 +156,7 @@ class CalcView(View):
 
         # Поверхность
         figure_surf = go.Figure()
-        # figure_surf.add_trace(go.Line(x=plot_x, y=plot_dis, name="Дислокации"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_gr, name="Зерна"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_tw, name="Двойники"))
         figure_surf.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
-        # figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
         figure_surf.update_layout(
             title="Поверхность",
             height=PLOT_HEIGHT,
@@ -200,9 +191,9 @@ class CalcView(View):
         figure_flows.update_xaxes(title="Время, мин")
 
         # Дельта дислокаций
-        figure_flows_delta = go.Figure()
-        figure_flows_delta.add_trace(go.Line(x=plot_x, y=plot_dis_delta, name="Дельта на дислокациях"))
-        figure_flows_delta.update_layout(
+        figure_plot_dis_delta = go.Figure()
+        figure_plot_dis_delta.add_trace(go.Line(x=plot_x, y=plot_dis_delta, name="Дельта на дислокациях"))
+        figure_plot_dis_delta.update_layout(
             title="Дельта потоков на дислокациях",
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
@@ -214,7 +205,25 @@ class CalcView(View):
                 x=0.01
             )
         )
-        figure_flows_delta.update_xaxes(title="Время, мин")
+        figure_plot_dis_delta.update_xaxes(title="Время, мин")
+
+
+        # Дельта дислокаций без Av
+        figure_clean_delta = go.Figure()
+        figure_clean_delta.add_trace(go.Line(x=plot_x, y=plot_clean_delta, name="Дельта на дислокациях (без Av)"))
+        figure_clean_delta.update_layout(
+            title="Дельта потоков на дислокациях (без Av)",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_clean_delta.update_xaxes(title="Время, мин")
 
         # Вероятности
         figure_probability = go.Figure()
@@ -251,19 +260,26 @@ class CalcView(View):
         #     ),
         # )
 
-        results = filter_results(results, excluded=['prob_plus', 'prob_minus', 'con_gr', 'con_tw'])
+        results = filter_results(results, excluded=[
+            'prob_plus',
+            'prob_minus',
+            'con_gr',
+            'con_tw',
+            'time',
+            'clean_delta'
+        ])
 
         context = {
             'results': results,
             'figure_temp': figure_temp.to_html(),
             'figure_vac': figure_vac.to_html(),
             'figure_flows': figure_flows.to_html(),
-            'figure_flows_delta': figure_flows_delta.to_html(),
+            'figure_plot_dis_delta': figure_plot_dis_delta.to_html(),
             'figure_probability': figure_probability.to_html(),
             'figure_dis': figure_dis.to_html(),
             'figure_matrix': figure_matrix.to_html(),
             'figure_surf': figure_surf.to_html(),
-            # 'figure_b_factor_prob': figure_b_factor_prob.to_html(),
+            'figure_clean_delta': figure_clean_delta.to_html(),
         }
         # print(results)
 

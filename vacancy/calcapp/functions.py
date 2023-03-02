@@ -7,7 +7,7 @@ import django
 
 from django.forms.models import model_to_dict
 
-from calcapp.utils import export_results_to_xls
+from calcapp.utils import export_results_to_xls, time_to_str
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vacancy.settings')
 django.setup()
@@ -135,6 +135,14 @@ class Experiment:
         # flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
         flow_plus = 3 * np.pi * probability * (1 - 3 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par)) * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
+        # if 5600 < self.current_time < 5950:
+        #     print(self.current_time)
+        #     print("==============PLUS=====================")
+        #     print(f"probability - {probability}")
+        #     print(f"self.concentrations['vac'] - {3 * np.pi * self.concentrations['vac'] * self.detail.metal.close_node ** 2}")
+        #     print(f"1 - 3 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par) - {1 - 3 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par)}")
+        #     print(f"b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE - {b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE}\n\n")
+
         return flow_plus
 
     @property
@@ -149,6 +157,14 @@ class Experiment:
         n_vd_ = n_vd*tau*exp(-E_mv/(kT)) / (1+0.5*exp(E_vd/(kT)))
         """
         flow_minus = probability * self.concentrations['dis'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+
+        # if 5600 < self.current_time < 5950:
+        #     print(self.current_time)
+        #     print("==============MINUS=====================")
+        #     print(f"probability - {probability}")
+        #     print(f"self.concentrations['dis'] - {self.concentrations['dis']}")
+        #     print(f"self.concentrations['dis'] * probability - {self.concentrations['dis'] * probability}")
+        #     print(f"b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE - {b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE}\n\n")
 
         return flow_minus
 
@@ -311,6 +327,7 @@ class Experiment:
 
         # Расчет шага температуры
         delta_T = self.delta_time / self.exp_settings.warm_period
+        self.temp += delta_T / 2
 
         # Переменная номера шага для информативности
         _step_count = 0
@@ -319,18 +336,18 @@ class Experiment:
         is_dis_grow_again = False
 
         # Выполняем расчет концентраций по шагам
-        while self.current_time <= self.exp_settings.time_stop * 60:
+        while self.current_time <= self.exp_settings.time_stop:
 
             # Расчет дельты концентрации на дислокациях
             conc_dis_plus = self.conc_dis_plus
             conc_dis_minus = self.conc_dis_minus
 
-            if conc_dis_plus < conc_dis_minus:
-                is_dis_grow = False
-
-            if not is_dis_grow:
-                if conc_dis_plus > conc_dis_minus:
-                    is_dis_grow_again = True
+            # if conc_dis_plus < conc_dis_minus:
+            #     is_dis_grow = False
+            #
+            # if not is_dis_grow:
+            #     if conc_dis_plus > conc_dis_minus:
+            #         is_dis_grow_again = True
 
             # if is_dis_grow_again and self.delta_time > DELTA_TIME_MIN:
             #
@@ -388,16 +405,19 @@ class Experiment:
             self.results.append(
                 {
                     'time': round(self.current_time / 60),
+                    'time_range': time_to_str(int(self.current_time), int(self.delta_time)),
                     'T': self.temp,
                     'con_dis': [self.concentrations['dis'], delta_vac["dis"]],
                     'con_dis_plus': conc_dis_plus,
                     'con_dis_minus': conc_dis_minus,
+                    'clean_delta': delta_vac["dis"] / b_factor(-self.detail.defect.mig_ener, self.temp) / c.DEBYE,
                     'con_gr': [self.concentrations['gr'], delta_vac["gr"]],
                     'con_tw': [self.concentrations['tw'], delta_vac["tw"]],
                     'con_surf': [self.concentrations['surf'], delta_vac["surf"]],
                     'con_vac': [self.concentrations['vac'], delta_vac["vac"]],
                     'prob_plus': prob_plus,
                     'prob_minus': prob_minus,
+                    # 'b_factor': b_factor(-self.detail.defect.mig_ener, self.temp),
                 }
             )
 

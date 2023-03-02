@@ -61,7 +61,7 @@ class ExperimentSettings(models.Model):
     temp_stop = models.FloatField(verbose_name='Температура в конце эксперимента, К')
     time_step = models.FloatField(verbose_name='Шаг, с', default=60)
     conc_vac_start = models.FloatField(verbose_name='Начальная концентрация вакансий', default=4.6e-4)
-    time_stop = models.FloatField(verbose_name='Продолжительность эксперимента, мин', default=400)
+    time_stop = models.FloatField(verbose_name='Продолжительность эксперимента, с', default=400)
 
     def __str__(self):
         return self.set_name
