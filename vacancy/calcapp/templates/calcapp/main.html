@@ -39,6 +39,12 @@
 
 <hr>
 
+{% if figure_plot_dis_delta %}
+{{ figure_plot_dis_delta|safe }}
+{% endif %}
+
+<hr>
+
 {% if figure_flows %}
 {{ figure_flows|safe }}
 {% endif %}
@@ -51,9 +57,15 @@
 
 <!--<hr>-->
 
-{% if figure_b_factor_mig %}
-{{ figure_b_factor_mig|safe }}
-{% endif %}
+<!--{% if figure_b_factor_mig %}-->
+<!--{{ figure_b_factor_mig|safe }}-->
+<!--{% endif %}-->
+<!--<br>-->
+
+<!--{% if figure_clean_delta %}-->
+<!--{{ figure_clean_delta|safe }}-->
+<!--{% endif %}-->
+
 <br>
 
 <!--<a href="{#% url 'download-xlsx' results %#}">Скачать таблицу</a>-->
@@ -66,7 +78,7 @@
             <th>Дислокации</th>
             <th>Дислокации+</th>
             <th>Дислокации-</th>
-<!--            <th>Зерна</th>-->
+<!--            <th>Дельта без Av</th>-->
 <!--            <th>Двойники</th>-->
             <th>Поверхность</th>
             <th>В матрице</th>
@@ -78,8 +90,8 @@
         {% for key, value in row.items %}
             {% if key == "T" %}
                 <td>{{ value|stringformat:".2f" }}</td>
-            {% elif key == "time" %}
-                <td>{{ value|stringformat:".0f" }}</td>
+            {% elif key == "time_range" %}
+                <td>{{ value }}</td>
             {% else %}
                 {% if value|length > 0 %}
                 <td>{{ value.0|stringformat:".4e" }}<br>
