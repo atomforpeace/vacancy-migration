@@ -342,27 +342,32 @@ class Experiment:
             conc_dis_plus = self.conc_dis_plus
             conc_dis_minus = self.conc_dis_minus
 
-            # if conc_dis_plus < conc_dis_minus:
-            #     is_dis_grow = False
-            #
-            # if not is_dis_grow:
-            #     if conc_dis_plus > conc_dis_minus:
-            #         is_dis_grow_again = True
+            dis_matrix_delta = self.dis_matrix_delta
 
-            # if is_dis_grow_again and self.delta_time > DELTA_TIME_MIN:
-            #
-            #     if self.temp < self.exp_settings.temp_stop:
-            #         self.temp -= delta_T
-            #     self.current_time -= self.delta_time
-            #
-            #     self.delta_time /= 2
-            #
-            #     self.current_time += self.delta_time
-            #     delta_T = self.delta_time / self.exp_settings.warm_period
-            #     if self.temp < self.exp_settings.temp_stop:
-            #         self.temp += delta_T
-            #     is_dis_grow_again = False
-            #     continue
+            if conc_dis_plus < conc_dis_minus:
+                is_dis_grow = False
+
+            if not is_dis_grow:
+                if conc_dis_plus > conc_dis_minus:
+                    is_dis_grow_again = True
+
+            if is_dis_grow_again:
+                    # and self.delta_time > DELTA_TIME_MIN:
+                conc_dis_plus = conc_dis_minus
+                dis_matrix_delta = 0
+                is_dis_grow_again = False
+                # if self.temp < self.exp_settings.temp_stop:
+                #     self.temp -= delta_T
+                # self.current_time -= self.delta_time
+                #
+                # self.delta_time /= 2
+                #
+                # self.current_time += self.delta_time
+                # delta_T = self.delta_time / self.exp_settings.warm_period
+                # if self.temp < self.exp_settings.temp_stop:
+                #     self.temp += delta_T
+                # is_dis_grow_again = False
+                # continue
 
             if self.concentrations["dis"] < conc_dis_minus - conc_dis_plus and self.delta_time > DELTA_TIME_MIN:
                 if self.temp < self.exp_settings.temp_stop:
@@ -390,7 +395,7 @@ class Experiment:
 
             # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
             # delta_vac["vac"] = self.dis_matrix_delta + self.gr_matrix_delta + self.tw_matrix_delta - delta_vac['surf']
-            delta_vac["vac"] = self.dis_matrix_delta - delta_vac['surf']
+            delta_vac["vac"] = dis_matrix_delta - delta_vac['surf']
 
 
             # Расчет концентраций
