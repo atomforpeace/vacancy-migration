@@ -33,23 +33,36 @@
 
 <hr>
 
+{% if figure_gr %}
+{{ figure_gr|safe }}
+{% endif %}
+
+<hr>
+
+
+{% if figure_tw %}
+{{ figure_tw|safe }}
+{% endif %}
+
+<hr>
+
 {% if figure_surf %}
 {{ figure_surf|safe }}
 {% endif %}
 
 <hr>
 
-{% if figure_plot_dis_delta %}
-{{ figure_plot_dis_delta|safe }}
-{% endif %}
+<!--{% if figure_plot_dis_delta %}-->
+<!--{{ figure_plot_dis_delta|safe }}-->
+<!--{% endif %}-->
 
-<hr>
+<!--<hr>-->
 
-{% if figure_flows %}
-{{ figure_flows|safe }}
-{% endif %}
+<!--{% if figure_flows %}-->
+<!--{{ figure_flows|safe }}-->
+<!--{% endif %}-->
 
-<hr>
+<!--<hr>-->
 
 <!--{% if figure_probability %}-->
 <!--{{ figure_probability|safe }}-->
@@ -76,10 +89,11 @@
             <th>Время</th>
             <th>T</th>
             <th>Дислокации</th>
-            <th>Дислокации+</th>
-            <th>Дислокации-</th>
+<!--            <th>Дислокации+</th>-->
+<!--            <th>Дислокации-</th>-->
 <!--            <th>Дельта без Av</th>-->
-<!--            <th>Двойники</th>-->
+            <th>Зерна</th>
+            <th>Двойники</th>
             <th>Поверхность</th>
             <th>В матрице</th>
 <!--            <th>exp(-Emv/kT)</th>-->
