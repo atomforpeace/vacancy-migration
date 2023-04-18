@@ -137,6 +137,40 @@ class CalcView(View):
         )
         figure_dis.update_xaxes(title="Время, мин")
 
+        # Границы зерен
+        figure_gr = go.Figure()
+        figure_gr.add_trace(go.Line(x=plot_x, y=plot_gr, name="Дислокации"))
+        figure_gr.update_layout(
+            title="Зерна",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.4,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_gr.update_xaxes(title="Время, мин")
+
+        # Границы зерен
+        figure_tw = go.Figure()
+        figure_tw.add_trace(go.Line(x=plot_x, y=plot_tw, name="Дислокации"))
+        figure_tw.update_layout(
+            title="Двойники",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.4,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_tw.update_xaxes(title="Время, мин")
+
         # Матрица
         figure_matrix = go.Figure()
         figure_matrix.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
@@ -263,8 +297,10 @@ class CalcView(View):
         results = filter_results(results, excluded=[
             'prob_plus',
             'prob_minus',
-            'con_gr',
-            'con_tw',
+            'con_dis_plus',
+            'con_dis_minus',
+            # 'con_gr',
+            # 'con_tw',
             'time',
             'clean_delta'
         ])
@@ -277,6 +313,8 @@ class CalcView(View):
             'figure_plot_dis_delta': figure_plot_dis_delta.to_html(),
             'figure_probability': figure_probability.to_html(),
             'figure_dis': figure_dis.to_html(),
+            'figure_gr': figure_gr.to_html(),
+            'figure_tw': figure_tw.to_html(),
             'figure_matrix': figure_matrix.to_html(),
             'figure_surf': figure_surf.to_html(),
             'figure_clean_delta': figure_clean_delta.to_html(),
