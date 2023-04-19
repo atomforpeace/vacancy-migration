@@ -129,21 +129,11 @@ class Experiment:
         probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
 
         """
-        n_vd = 3*pi*(1-3*a1*n_vd)*a1^2*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
+        n_vd = 3*pi*(1-4*a1*n_vd)*a1^2*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
         """
 
         # flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-        flow_plus = 3 * np.pi * probability * (1 - 3 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par)) * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
-
-        b = b_factor(-self.detail.defect.mig_ener, self.temp)
-
-        # if 5600 < self.current_time < 5950:
-        #     print(self.current_time)
-        #     print("==============PLUS=====================")
-        #     print(f"probability - {probability}")
-        #     print(f"self.concentrations['vac'] - {3 * np.pi * self.concentrations['vac'] * self.detail.metal.close_node ** 2}")
-        #     print(f"1 - 3 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par) - {1 - 3 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par)}")
-        #     print(f"b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE - {b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE}\n\n")
+        flow_plus = 3 * np.pi * probability * (1 - 4 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par)) * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
         return flow_plus
 
@@ -159,15 +149,6 @@ class Experiment:
         n_vd_ = n_vd*tau*exp(-E_mv/(kT)) / (1+0.5*exp(E_vd/(kT)))
         """
         flow_minus = probability * self.concentrations['dis'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
-
-
-        # if 5600 < self.current_time < 5950:
-        #     print(self.current_time)
-        #     print("==============MINUS=====================")
-        #     print(f"probability - {probability}")
-        #     print(f"self.concentrations['dis'] - {self.concentrations['dis']}")
-        #     print(f"self.concentrations['dis'] * probability - {self.concentrations['dis'] * probability}")
-        #     print(f"b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE - {b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE}\n\n")
 
         return flow_minus
 
@@ -197,9 +178,9 @@ class Experiment:
         probability = 1 / (1 + b_factor(-self.detail.defect.gr_ener, self.temp))
 
         """
-        n_vg = 2*a1*(1-8*a1^2*n_vg)*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
+        n_vg = 2*a1*(1-16*a1^2*n_vg)*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
         """
-        flow_plus = 2 * self.detail.metal.close_node * (1 - 8 * self.detail.metal.close_node ** 2 * conc_abs_to_rel(self.concentrations['gr'], self.detail.metal.grid_par)) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+        flow_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * conc_abs_to_rel(self.concentrations['gr'], self.detail.metal.grid_par)) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
         return flow_plus
 
@@ -225,7 +206,7 @@ class Experiment:
         """
 
         plus = self.conc_gr_minus
-        minus = 2 * self.detail.metal.close_node * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.gr_ener, self.temp)) * c.DEBYE
+        minus = 2 * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.gr_ener, self.temp)) * c.DEBYE
 
         """
         
@@ -245,7 +226,7 @@ class Experiment:
         """
         
         """
-        flow_plus = 2 * self.detail.metal.close_node * (1 - 8 * self.detail.metal.close_node ** 2 * conc_abs_to_rel(self.concentrations['tw'], self.detail.metal.grid_par)) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+        flow_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * conc_abs_to_rel(self.concentrations['tw'], self.detail.metal.grid_par)) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
         return flow_plus
 
@@ -271,7 +252,7 @@ class Experiment:
         """
 
         plus = self.conc_gr_minus
-        minus = 2 * self.detail.metal.close_node * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.gr_ener, self.temp)) * c.DEBYE
+        minus = 2 * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) / (1 + b_factor(self.detail.defect.gr_ener, self.temp)) * c.DEBYE
 
         """
         ro_d*n_vd*tau*exp(-E_mv/(kT)) / (1+0.5*exp(E_vd/(kT))) - 3*pi*ro_d*a1^2*n_v*tau*exp(-E_mv/(kT)) / (1+2*exp(-E_vd/(kT)))
