@@ -338,11 +338,11 @@ class Experiment:
                 if conc_dis_plus > conc_dis_minus:
                     is_dis_grow_again = True
 
-            if is_dis_grow_again or (self.concentrations["dis"] + conc_dis_plus - conc_dis_minus < 0):
-                    # and self.delta_time > DELTA_TIME_MIN:
-                conc_dis_plus = conc_dis_minus
-                dis_matrix_delta = 0
-                is_dis_grow_again = False
+         #   if is_dis_grow_again or (self.concentrations["dis"] + conc_dis_plus - conc_dis_minus < 0):
+          #          # and self.delta_time > DELTA_TIME_MIN:
+           #     conc_dis_plus = conc_dis_minus
+           #     dis_matrix_delta = 0
+         #       is_dis_grow_again = False
 
                 # if self.temp < self.exp_settings.temp_stop:
                 #     self.temp -= delta_T
