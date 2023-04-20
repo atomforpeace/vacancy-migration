@@ -274,7 +274,7 @@ class Experiment:
         n_vg = Vs*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vs/(kT)))
         """
         # flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-        flow_plus = 1080 * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * self.detail.metal.close_node
+        flow_plus = 0 * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * self.detail.metal.close_node
 
         return flow_plus
 
