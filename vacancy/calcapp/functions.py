@@ -274,7 +274,7 @@ class Experiment:
         n_vg = Vs*nu*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vs/(kT)))
         """
         # flow_plus = unit_volume * probability * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-        flow_plus = 0 * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * self.detail.metal.close_node
+        flow_plus = 1080 * self.concentrations['vac'] * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * self.detail.metal.close_node
 
         return flow_plus
 
@@ -338,11 +338,11 @@ class Experiment:
                 if conc_dis_plus > conc_dis_minus:
                     is_dis_grow_again = True
 
-         #   if is_dis_grow_again or (self.concentrations["dis"] + conc_dis_plus - conc_dis_minus < 0):
-          #          # and self.delta_time > DELTA_TIME_MIN:
-           #     conc_dis_plus = conc_dis_minus
-           #     dis_matrix_delta = 0
-         #       is_dis_grow_again = False
+            if is_dis_grow_again or (self.concentrations["dis"] + conc_dis_plus - conc_dis_minus < 0):
+                    # and self.delta_time > DELTA_TIME_MIN:
+                conc_dis_plus = conc_dis_minus
+                dis_matrix_delta = 0
+                is_dis_grow_again = False
 
                 # if self.temp < self.exp_settings.temp_stop:
                 #     self.temp -= delta_T
