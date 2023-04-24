@@ -70,9 +70,10 @@ class CalcView(View):
         plot_T = [item['T'] for item in results]
         plot_dis = [item['con_dis'][0] for item in results]
         plot_dis_delta = [item['con_dis'][1] for item in results]
-        plot_dis_plus = [item['con_dis_plus'] for item in results]
-        plot_dis_minus = [item['con_dis_minus'] for item in results]
-        plot_dis_delta = [item['con_dis_plus'] - item['con_dis_minus'] for item in results]
+        # plot_dis_plus = [item['con_dis_plus'] for item in results]
+        # plot_dis_minus = [item['con_dis_minus'] for item in results]
+        # plot_dis_delta = [item['con_dis_plus'] - item['con_dis_minus'] for item in results]
+        # plot_dis_delta = [item['con_dis_plus'] - item['con_dis_minus'] for item in results]
         plot_gr = [item['con_gr'][0] for item in results]
         plot_tw = [item['con_tw'][0] for item in results]
         plot_surf = [item['con_surf'][0] for item in results]
@@ -205,24 +206,24 @@ class CalcView(View):
         )
         figure_surf.update_xaxes(title="Время, мин")
 
-        # Потоки дислокаций
-        figure_flows = go.Figure()
-        figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_plus, name="На дислокации"))
-        figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_minus, name="С дислокаций"))
-        figure_flows.update_yaxes(exponentformat="E")
-        figure_flows.update_layout(
-            title="Потоки на/с дислокаций",
-            height=PLOT_HEIGHT,
-            width=PLOT_WIDTH,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.2,
-                xanchor="left",
-                x=0.01
-            )
-        )
-        figure_flows.update_xaxes(title="Время, мин")
+        # # Потоки дислокаций
+        # figure_flows = go.Figure()
+        # figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_plus, name="На дислокации"))
+        # figure_flows.add_trace(go.Line(x=plot_x, y=plot_dis_minus, name="С дислокаций"))
+        # figure_flows.update_yaxes(exponentformat="E")
+        # figure_flows.update_layout(
+        #     title="Потоки на/с дислокаций",
+        #     height=PLOT_HEIGHT,
+        #     width=PLOT_WIDTH,
+        #     legend=dict(
+        #         orientation="h",
+        #         yanchor="bottom",
+        #         y=-0.2,
+        #         xanchor="left",
+        #         x=0.01
+        #     )
+        # )
+        # figure_flows.update_xaxes(title="Время, мин")
 
         # Дельта дислокаций
         figure_plot_dis_delta = go.Figure()
@@ -309,7 +310,7 @@ class CalcView(View):
             'results': results,
             'figure_temp': figure_temp.to_html(),
             'figure_vac': figure_vac.to_html(),
-            'figure_flows': figure_flows.to_html(),
+            # 'figure_flows': figure_flows.to_html(),
             'figure_plot_dis_delta': figure_plot_dis_delta.to_html(),
             'figure_probability': figure_probability.to_html(),
             'figure_dis': figure_dis.to_html(),
