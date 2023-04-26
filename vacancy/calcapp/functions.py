@@ -16,16 +16,16 @@ import calcapp.constants as c
 from calcapp.models import Metal, Defect, ExperimentSettings
 
 # CONC_REL = 2.82e-4
-CONC_REL = 4.6e-4
-CONC_ABS = 4.18e25
-VS = 2.2e-7
-EVC = 0.05  # Что это?
+# CONC_REL = 4.6e-4
+# CONC_ABS = 4.18e25
+# VS = 2.2e-7
+# EVC = 0.05  # Что это?
+#
+# NV1C = 47.3
+# NC0 = 4.42e22
 
-NV1C = 47.3
-NC0 = 4.42e22
 
-
-DELTA_TIME_MIN = 10
+# DELTA_TIME_MIN = 10
 
 def b_factor(energy, temp):
     """
@@ -93,7 +93,7 @@ class Experiment:
         # Устанавливаем температуру равной начальной из БД
         self.temp = self.exp_settings.temp_start
 
-        self.rel_volume_clus = NV1C
+        # self.rel_volume_clus = NV1C
         self.concentrations = {
             'dis': 0,
             'gr': 0,
@@ -119,6 +119,18 @@ class Experiment:
             "dis": 1,
             "gr": 1,
             "tw": 1,
+        }
+
+        self.is_grow = {
+            "dis": True,
+            "gr": True,
+            "tw": True,
+        }
+
+        self.is_fall_slow = {
+            "dis": False,
+            "gr": False,
+            "tw": False,
         }
 
         self.conc_const = conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par)
@@ -296,6 +308,44 @@ class Experiment:
 
         return flow_plus
 
+    def correct_flow(self, type_):
+        values = {
+            "dis": [self.conc_dis_plus - self.conc_dis_minus, self.dis_matrix_delta],
+            "gr": [self.conc_gr_plus - self.conc_gr_minus, self.gr_matrix_delta],
+            "tw": [self.conc_tw_plus - self.conc_tw_minus, self.tw_matrix_delta],
+        }
+
+        delta, matrix_delta = values[type_]
+
+        if self.concentrations[type_] + delta < 0:
+            delta = 0
+            matrix_delta = 0
+        else:
+            if delta < 0:
+                self.is_grow[type_] = False
+
+            if not self.is_grow[type_]:
+                self.conc_coef[type_] = self.concentrations_delta[type_] / self.concentrations_delta_prev[type_]
+
+                if self.concentrations_delta[type_] > self.concentrations_delta_prev[type_]:
+                    self.is_fall_slow[type_] = True
+
+                if self.is_fall_slow[type_]:
+                    if delta > self.concentrations_delta[type_]:
+                        matrix_delta = matrix_delta * self.concentrations_delta[type_] * self.conc_coef[
+                            type_] / delta
+                        delta = self.concentrations_delta[type_] * self.conc_coef[type_]
+
+                if self.concentrations[type_] + delta < 0:
+                    delta = 0
+                    matrix_delta = 0
+
+            self.concentrations_delta_prev[type_] = self.concentrations_delta[type_]
+            if delta != 0:
+                self.concentrations_delta[type_] = delta
+
+        return delta, matrix_delta
+
     def start(self):
         """
         Решение задачи Коши методом Эйлера
@@ -308,214 +358,25 @@ class Experiment:
         # Переменная номера шага для информативности
         _step_count = 0
 
-        is_dis_grow = True
-        is_gr_grow = True
-        is_tw_grow = True
-        # is_dis_grow_again = False
-        # is_gr_grow_again = False
-        # is_tw_grow_again = False
-        is_dis_fall_slow = False
-        is_gr_fall_slow = False
-        is_tw_fall_slow = False
 
         # Выполняем расчет концентраций по шагам
         while self.current_time <= self.exp_settings.time_stop:
 
-            # Расчет дельты концентрации на дислокациях
-            # conc_dis_plus = self.conc_dis_plus
-            # conc_dis_minus = self.conc_dis_minus
+            delta_stock = {}
+            delta_vac = {}
 
-            dis_delta = self.conc_dis_plus - self.conc_dis_minus
-            # dis_delta_coef = dis_delta / self.concentrations_delta["dis"]
-            dis_matrix_delta = self.dis_matrix_delta
+            for stock in ("dis", "gr", "tw"):
+                delta_stock[stock], delta_vac[stock] = self.correct_flow(stock)
 
-            if dis_delta < 0:
-                is_dis_grow = False
-
-            if not is_dis_grow:
-                self.conc_coef["dis"] = self.concentrations_delta["dis"] / self.concentrations_delta_prev["dis"]
-                # if dis_delta > 0:
-                #     # is_dis_grow_again = True
-                #     self.conc_coef = self.concentrations_delta["dis"] / self.concentrations_delta_prev["dis"]
-
-                if self.concentrations_delta["dis"] > self.concentrations_delta_prev["dis"]:
-                    is_dis_fall_slow = True
-                    # self.conc_coef = self.concentrations_delta["dis"] / self.concentrations_delta_prev["dis"]
-                if is_dis_fall_slow:
-                    if dis_delta > self.concentrations_delta["dis"]:
-                        dis_matrix_delta = dis_matrix_delta * self.concentrations_delta["dis"] * self.conc_coef["dis"] / dis_delta
-                        dis_delta = self.concentrations_delta["dis"] * self.conc_coef["dis"]
-                # else:
-                #     self.conc_coef = self.concentrations_delta["dis"] / self.concentrations_delta_prev["dis"]
-
-                if self.concentrations["dis"] + dis_delta < 0:
-                    dis_delta = 0
-                    dis_matrix_delta = 0
-                # is_dis_grow_again = False
-            self.concentrations_delta_prev["dis"] = self.concentrations_delta["dis"]
-            if dis_delta != 0:
-                self.concentrations_delta["dis"] = dis_delta
-
-
-
-
-            # Расчет дельты концентрации на границах зерен
-            gr_delta = self.conc_gr_plus - self.conc_gr_minus
-            gr_matrix_delta = self.gr_matrix_delta
-
-            if self.concentrations["gr"] + gr_delta < 0:
-                gr_delta = 0
-                gr_matrix_delta = 0
-            else:
-                if gr_delta < 0:
-                    is_gr_grow = False
-
-                if not is_gr_grow:
-                    self.conc_coef["gr"] = self.concentrations_delta["gr"] / self.concentrations_delta_prev["gr"]
-
-                    if self.concentrations_delta["gr"] > self.concentrations_delta_prev["gr"]:
-                        is_gr_fall_slow = True
-
-                    if is_gr_fall_slow:
-                        if gr_delta > self.concentrations_delta["gr"]:
-                            gr_matrix_delta = gr_matrix_delta * self.concentrations_delta["gr"] * self.conc_coef["gr"] / gr_delta
-                            gr_delta = self.concentrations_delta["gr"] * self.conc_coef["gr"]
-
-                    if self.concentrations["gr"] + gr_delta < 0:
-                        gr_delta = 0
-                        gr_matrix_delta = 0
-
-                self.concentrations_delta_prev["gr"] = self.concentrations_delta["gr"]
-                if gr_delta != 0:
-                    self.concentrations_delta["gr"] = gr_delta
-
-            # Расчет дельты концентрации на двойниках
-            tw_delta = self.conc_tw_plus - self.conc_tw_minus
-            tw_matrix_delta = self.tw_matrix_delta
-
-            if self.concentrations["tw"] + tw_delta < 0:
-                tw_delta = 0
-                tw_matrix_delta = 0
-            else:
-                if tw_delta < 0:
-                    is_tw_grow = False
-
-                if not is_tw_grow:
-                    self.conc_coef["tw"] = self.concentrations_delta["tw"] / self.concentrations_delta_prev["tw"]
-
-                    if self.concentrations_delta["tw"] > self.concentrations_delta_prev["tw"]:
-                        is_tw_fall_slow = True
-
-                    if is_tw_fall_slow:
-                        if tw_delta > self.concentrations_delta["tw"]:
-                            tw_matrix_delta = tw_matrix_delta * self.concentrations_delta["tw"] * self.conc_coef[
-                                "tw"] / tw_delta
-                            tw_delta = self.concentrations_delta["tw"] * self.conc_coef["tw"]
-
-                    if self.concentrations["tw"] + tw_delta < 0:
-                        tw_delta = 0
-                        tw_matrix_delta = 0
-
-            self.concentrations_delta_prev["tw"] = self.concentrations_delta["tw"]
-            if tw_delta != 0:
-                self.concentrations_delta["tw"] = tw_delta
-
-                # if is_dis_grow_again or (self.concentrations["dis"] + conc_dis_plus - conc_dis_minus < 0):
-                #         # and self.delta_time > DELTA_TIME_MIN:
-                #     conc_dis_plus = conc_dis_minus
-                #     dis_matrix_delta = 0
-                #     is_dis_grow_again = False
-
-                # if self.temp < self.exp_settings.temp_stop:
-                #     self.temp -= delta_T
-                # self.current_time -= self.delta_time
-                #
-                # self.delta_time /= 2
-                #
-                # self.current_time += self.delta_time
-                # delta_T = self.delta_time / self.exp_settings.warm_period
-                # if self.temp < self.exp_settings.temp_stop:
-                #     self.temp += delta_T
-                # is_dis_grow_again = False
-                # continue
-
-            # Расчет дельты концентрации на границах зерен
-            # conc_gr_plus = self.conc_gr_plus
-            # conc_gr_minus = self.conc_gr_minus
-            # gr_matrix_delta = self.gr_matrix_delta
-            # conc_gr_plus = 0
-            # conc_gr_minus = 0
-            # gr_matrix_delta = 0
-            #
-            # if conc_gr_plus < conc_gr_minus:
-            #     is_gr_grow = False
-            #
-            # if not is_gr_grow:
-            #     if conc_gr_plus > conc_gr_minus:
-            #         is_gr_grow_again = True
-
-            # if is_gr_grow_again or (self.concentrations["gr"] + conc_gr_plus - conc_gr_minus < 0):
-            #     conc_gr_plus = conc_gr_minus
-            #     gr_matrix_delta = 0
-            #     is_gr_grow_again = False
-
-            # Расчет дельты концентрации на двойниках
-            # conc_tw_plus = self.conc_tw_plus
-            # conc_tw_minus = self.conc_tw_minus
-            # tw_matrix_delta = self.tw_matrix_delta
-            # conc_tw_plus = 0
-            # conc_tw_minus = 0
-            # tw_matrix_delta = 0
-            #
-            # if conc_tw_plus < conc_tw_minus:
-            #     is_tw_grow = False
-            #
-            # if not is_tw_grow:
-            #     if conc_tw_plus > conc_tw_minus:
-            #         is_tw_grow_again = True
-
-            # if is_tw_grow_again or (self.concentrations["tw"] + conc_tw_plus - conc_tw_minus < 0):
-            #     conc_tw_plus = conc_tw_minus
-            #     tw_matrix_delta = 0
-            #     is_tw_grow_again = False
-
-            # if self.concentrations["dis"] < conc_dis_minus - conc_dis_plus and self.delta_time > DELTA_TIME_MIN:
-            #     if self.temp < self.exp_settings.temp_stop:
-            #             self.temp -= delta_T
-            #     self.current_time -= self.delta_time
-            #
-            #     self.delta_time /= 2
-            #
-            #     self.current_time += self.delta_time
-            #     delta_T = self.delta_time / self.exp_settings.warm_period
-            #     if self.temp < self.exp_settings.temp_stop:
-            #         self.temp += delta_T
-            #     continue
-
-            delta_vac = {'dis': dis_delta}
-
-            # Расчет дельты концентрации на зернах
-            delta_vac['gr'] = gr_delta
-
-            # Расчет дельты концентрации на двойниках
-            delta_vac['tw'] = tw_delta
-
-            # Расчет дельты концентрации на поверхности
-            delta_vac['surf'] = self.conc_surf_plus
+            delta_stock['surf'] = self.conc_surf_plus
 
             # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
-            # delta_vac["vac"] = self.dis_matrix_delta + self.gr_matrix_delta + self.tw_matrix_delta - delta_vac['surf']
-            delta_vac["vac"] = dis_matrix_delta + gr_matrix_delta + tw_matrix_delta - delta_vac['surf']
+            delta_stock["vac"] = delta_vac["dis"] + delta_vac["gr"] + delta_vac["tw"] - delta_stock['surf']
 
 
             # Расчет концентраций
             for stock in ("dis", "gr", "tw", "surf", "vac"):
-            # for stock in ("dis", "surf", "vac"):
-                self.concentrations[stock] += delta_vac[stock]
-
-            # Расчет вероятности дислокаций (вспомогательно)
-            prob_plus = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
-            prob_minus = 1 / (1 + 0.5 * b_factor(self.detail.defect.dis_ener, self.temp))
+                self.concentrations[stock] += delta_stock[stock]
 
             self.results.append(
                 {
@@ -523,17 +384,11 @@ class Experiment:
                     'time_range': time_to_str(int(self.current_time), int(self.delta_time)),
                     'T': self.temp,
                     'con_dis': [self.concentrations['dis'], delta_vac["dis"]],
-                    # 'con_dis_delta': [self.concentrations['dis'], delta_vac["dis"]],
-                    # 'con_dis_plus': conc_dis_plus,
-                    # 'con_dis_minus': conc_dis_minus,
                     'clean_delta': delta_vac["dis"] / b_factor(-self.detail.defect.mig_ener, self.temp) / c.DEBYE,
-                    'con_gr': [self.concentrations['gr'], delta_vac["gr"]],
-                    'con_tw': [self.concentrations['tw'], delta_vac["tw"]],
-                    'con_surf': [self.concentrations['surf'], delta_vac["surf"]],
-                    'con_vac': [self.concentrations['vac'], delta_vac["vac"]],
-                    'prob_plus': prob_plus,
-                    'prob_minus': prob_minus,
-                    # 'b_factor': b_factor(-self.detail.defect.mig_ener, self.temp),
+                    'con_gr': [self.concentrations['gr'], delta_stock["gr"]],
+                    'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
+                    'con_surf': [self.concentrations['surf'], delta_stock["surf"]],
+                    'con_vac': [self.concentrations['vac'], delta_stock["vac"]],
                 }
             )
 
