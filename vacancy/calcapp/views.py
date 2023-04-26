@@ -78,10 +78,11 @@ class CalcView(View):
         plot_tw = [item['con_tw'][0] for item in results]
         plot_surf = [item['con_surf'][0] for item in results]
         plot_vac = [item['con_vac'][0] for item in results]
-        plot_prob_plus = [item['prob_plus'] for item in results]
-        plot_prob_minus = [item['prob_minus'] for item in results]
+        # plot_prob_plus = [item['prob_plus'] for item in results]
+        # plot_prob_minus = [item['prob_minus'] for item in results]
         plot_clean_delta = [item['clean_delta'] for item in results]
         # b_factor = [item['b_factor'] for item in results]
+        plot_length = [item['length'] for item in results]
 
         # Температура
         figure_temp = go.Figure()
@@ -242,6 +243,23 @@ class CalcView(View):
         )
         figure_plot_dis_delta.update_xaxes(title="Время, мин")
 
+        # Размер
+        figure_plot_length = go.Figure()
+        figure_plot_length.add_trace(go.Line(x=plot_x, y=plot_length, name="Изменения размера"))
+        figure_plot_length.update_layout(
+            title="Изменения размера",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_plot_length.update_xaxes(title="Время, мин")
+
 
         # Дельта дислокаций без Av
         figure_clean_delta = go.Figure()
@@ -261,22 +279,22 @@ class CalcView(View):
         figure_clean_delta.update_xaxes(title="Время, мин")
 
         # Вероятности
-        figure_probability = go.Figure()
-        figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_plus, name="Вероятность притока на дислокации"))
-        figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_minus, name="Вероятность оттока с дислокаций"))
-        figure_probability.update_layout(
-            title="Вероятности",
-            height=PLOT_HEIGHT,
-            width=PLOT_WIDTH,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.2,
-                xanchor="left",
-                x=0.01
-            ),
-        )
-        figure_probability.update_xaxes(title="Время, мин")
+        # figure_probability = go.Figure()
+        # figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_plus, name="Вероятность притока на дислокации"))
+        # figure_probability.add_trace(go.Line(x=plot_x, y=plot_prob_minus, name="Вероятность оттока с дислокаций"))
+        # figure_probability.update_layout(
+        #     title="Вероятности",
+        #     height=PLOT_HEIGHT,
+        #     width=PLOT_WIDTH,
+        #     legend=dict(
+        #         orientation="h",
+        #         yanchor="bottom",
+        #         y=-0.2,
+        #         xanchor="left",
+        #         x=0.01
+        #     ),
+        # )
+        # figure_probability.update_xaxes(title="Время, мин")
 
 
         # figure_b_factor_prob = go.Figure()
@@ -296,8 +314,8 @@ class CalcView(View):
         # )
 
         results = filter_results(results, excluded=[
-            'prob_plus',
-            'prob_minus',
+            # 'prob_plus',
+            # 'prob_minus',
             'con_dis_plus',
             'con_dis_minus',
             # 'con_gr',
@@ -312,13 +330,14 @@ class CalcView(View):
             'figure_vac': figure_vac.to_html(),
             # 'figure_flows': figure_flows.to_html(),
             'figure_plot_dis_delta': figure_plot_dis_delta.to_html(),
-            'figure_probability': figure_probability.to_html(),
+            # 'figure_probability': figure_probability.to_html(),
             'figure_dis': figure_dis.to_html(),
             'figure_gr': figure_gr.to_html(),
             'figure_tw': figure_tw.to_html(),
             'figure_matrix': figure_matrix.to_html(),
             'figure_surf': figure_surf.to_html(),
             'figure_clean_delta': figure_clean_delta.to_html(),
+            'figure_length': figure_plot_length.to_html(),
         }
         # print(results)
 
