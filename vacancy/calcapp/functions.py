@@ -371,13 +371,17 @@ class Experiment:
 
             delta_stock['surf'] = self.conc_surf_plus
 
-            delta_volume = {}
+            delta_volume = {
+                "surf": self.detail.volume_delta["surf"] * delta_stock["surf"]
+            }
+
+            self.detail.metal.metal_length += delta_volume["surf"] / 3
 
             # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
             delta_stock["vac"] = delta_vac["dis"] + delta_vac["gr"] + delta_vac["tw"] - delta_stock['surf']
 
-            for stock in ("dis", "gr", "tw", "surf"):
-                delta_volume[stock] = self.detail.volume_delta[stock] * delta_stock[stock]
+            for stock in ("dis", "gr", "tw"):
+                delta_volume[stock] = self.detail.volume_delta[stock] * delta_vac[stock]
                 self.detail.metal.metal_length += delta_volume[stock] / 3
 
             # Расчет концентраций
@@ -389,7 +393,7 @@ class Experiment:
                     'time': round(self.current_time / 60),
                     'time_range': time_to_str(int(self.current_time), int(self.delta_time)),
                     'T': self.temp,
-                    'con_dis': [self.concentrations['dis'], delta_vac["dis"]],
+                    'con_dis': [self.concentrations['dis'], delta_stock["dis"]],
                     'clean_delta': delta_vac["dis"] / b_factor(-self.detail.defect.mig_ener, self.temp) / c.DEBYE,
                     'con_gr': [self.concentrations['gr'], delta_stock["gr"]],
                     'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
