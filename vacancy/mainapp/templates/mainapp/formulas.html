@@ -17,5 +17,7 @@
     {% latexify 'n_{vs_k} = n_{vs_{k-1}} + 1080 \cdot \Delta t  \cdot \nu \cdot e^{\frac{-E_{mv}}{k \cdot T}} \cdot n_{v_{k-1}}  ' math_block=True %}
 
     {% latexify 'n_{v_k} = n_{v_{k-1}} + \Delta t \cdot \nu \cdot e^{\frac{-E_{mv}}{k \cdot T}} \cdot \left( \rho _d \cdot \left(\frac{n_{vd_{k-1}}}{1+0.5\cdot e^{\frac{E_{vd}}{k \cdot T}}} - \frac{3 \cdot \pi \cdot a_1^2 \cdot n_{v_{k-1}}}{1 + 2 \cdot e^{\frac{-E_{vd}}{k \cdot T}}}\right) + S _g \cdot \left(\frac{n_{vg_{k-1}}}{1+2\cdot e^{\frac{E_{vg}}{k \cdot T}}} - \frac{2 \cdot a_1^2 \cdot n_{v_{k-1}}}{1 + e^{\frac{-E_{vg}}{k \cdot T}}}\right) + S _t \cdot \left(\frac{n_{vt_{k-1}}}{1+2\cdot e^{\frac{E_{vt}}{k \cdot T}}} - \frac{2 \cdot a_1^2 \cdot n_{v_{k-1}}}{1 + e^{\frac{-E_{vt}}{k \cdot T}}}\right)\right)  - n_{vs_k} ' math_block=True %}
+
+    {% latexify 'l_{k} = l_{k-1} + \Omega \cdot \frac{( 0.85 \cdot {\frac{(\Delta n_{vd_k} \cdot \Delta E_{vd} + \Delta n_{vg_k} \cdot \Delta E_{vg} + \Delta n_{vt_k} \cdot \Delta E_{vt})}{E_{v}}} + 0.15 \cdot \Delta n_{vs_k} )}{3} ' math_block=True %}
 </p>
 {% endblock %}

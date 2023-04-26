@@ -378,7 +378,7 @@ class Experiment:
 
             for stock in ("dis", "gr", "tw", "surf"):
                 delta_volume[stock] = self.detail.volume_delta[stock] * delta_stock[stock]
-                self.detail.metal.metal_length -= delta_volume[stock] / 3
+                self.detail.metal.metal_length += delta_volume[stock] / 3
 
             # Расчет концентраций
             for stock in ("dis", "gr", "tw", "surf", "vac"):
