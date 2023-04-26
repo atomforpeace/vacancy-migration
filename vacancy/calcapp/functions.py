@@ -62,7 +62,7 @@ class Detail:
         """
         Дельта энергии
         """
-        return ener / self.defect.form_ener * 0.15
+        return ener / self.defect.form_ener * 0.15 * self.metal.atomic_volume
 
     @property
     def volume_delta(self):
@@ -73,7 +73,7 @@ class Detail:
             'dis': self.vol_change(ener=self.defect.dis_ener),
             'gr': self.vol_change(ener=self.defect.gr_ener),
             'tw': self.vol_change(ener=self.defect.tw_ener),
-            'clus': self.vol_change(ener=EVC),
+            'surf': 0.85 * self.metal.atomic_volume,
         }
 
     @property
@@ -368,11 +368,17 @@ class Experiment:
             for stock in ("dis", "gr", "tw"):
                 delta_stock[stock], delta_vac[stock] = self.correct_flow(stock)
 
+
             delta_stock['surf'] = self.conc_surf_plus
+
+            delta_volume = {}
 
             # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
             delta_stock["vac"] = delta_vac["dis"] + delta_vac["gr"] + delta_vac["tw"] - delta_stock['surf']
 
+            for stock in ("dis", "gr", "tw", "surf"):
+                delta_volume[stock] = self.detail.volume_delta[stock] * delta_stock[stock]
+                self.detail.metal.metal_length -= delta_volume[stock] / 3
 
             # Расчет концентраций
             for stock in ("dis", "gr", "tw", "surf", "vac"):
@@ -389,6 +395,7 @@ class Experiment:
                     'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
                     'con_surf': [self.concentrations['surf'], delta_stock["surf"]],
                     'con_vac': [self.concentrations['vac'], delta_stock["vac"]],
+                    'length': self.detail.metal.metal_length,
                 }
             )
 

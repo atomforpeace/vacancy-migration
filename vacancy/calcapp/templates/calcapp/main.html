@@ -52,6 +52,12 @@
 
 <hr>
 
+{% if figure_length %}
+{{ figure_length|safe }}
+{% endif %}
+
+<hr>
+
 <!--{% if figure_plot_dis_delta %}-->
 <!--{{ figure_plot_dis_delta|safe }}-->
 <!--{% endif %}-->
@@ -96,6 +102,7 @@
             <th>Двойники</th>
             <th>Поверхность</th>
             <th>В матрице</th>
+            <th>Размер</th>
 <!--            <th>exp(-Emv/kT)</th>-->
         </tr>
     </thead>
@@ -112,7 +119,11 @@
                     <span class={% if value.1 > 0 %}"text-success">(+{% else %} "text-danger">( {% endif %}{{ value.1|stringformat:".2e" }})</span>
                 </td>
                 {% else %}
+                    {% if key == "length" %}
+                    <td>{{ value|stringformat:".8e" }}</td>
+                    {% else %}
                     <td>{{ value|stringformat:".4e" }}</td>
+                    {% endif %}
                 {% endif %}
             {% endif %}
         {% endfor %}

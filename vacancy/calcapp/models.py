@@ -15,6 +15,9 @@ class Metal(models.Model):
     dis_dens = models.FloatField(verbose_name='Плотность дислокаций, м-2')  # ro_d
     grid_par = models.FloatField(verbose_name='Параметр решетки, м')  # a
     close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла, м')  # a1
+    close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла, м')  # a1
+    atomic_volume = models.FloatField(verbose_name='Атомный объем, м3', default=7.23e-31)
+    metal_length = models.FloatField(verbose_name='Размер, м', default=0.04)
 
     def __str__(self):
         return self.metal_name

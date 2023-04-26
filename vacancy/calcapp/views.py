@@ -82,6 +82,7 @@ class CalcView(View):
         # plot_prob_minus = [item['prob_minus'] for item in results]
         plot_clean_delta = [item['clean_delta'] for item in results]
         # b_factor = [item['b_factor'] for item in results]
+        plot_length = [item['length'] for item in results]
 
         # Температура
         figure_temp = go.Figure()
@@ -242,6 +243,23 @@ class CalcView(View):
         )
         figure_plot_dis_delta.update_xaxes(title="Время, мин")
 
+        # Размер
+        figure_plot_length = go.Figure()
+        figure_plot_length.add_trace(go.Line(x=plot_x, y=plot_length, name="Изменения размера"))
+        figure_plot_length.update_layout(
+            title="Изменения размера",
+            height=PLOT_HEIGHT,
+            width=PLOT_WIDTH,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="left",
+                x=0.01
+            )
+        )
+        figure_plot_length.update_xaxes(title="Время, мин")
+
 
         # Дельта дислокаций без Av
         figure_clean_delta = go.Figure()
@@ -319,6 +337,7 @@ class CalcView(View):
             'figure_matrix': figure_matrix.to_html(),
             'figure_surf': figure_surf.to_html(),
             'figure_clean_delta': figure_clean_delta.to_html(),
+            'figure_length': figure_plot_length.to_html(),
         }
         # print(results)
 

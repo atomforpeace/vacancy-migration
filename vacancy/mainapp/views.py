@@ -1,21 +1,10 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from calcapp.models import Metal, Defect, ExperimentSettings
-from calcapp.serializers import MetalSerializer
+
 from mainapp.forms import MetalUpdateForm, DefectUpdateForm, MultiFormsView, SettingsUpdateForm
 from django.forms.models import model_to_dict
-
-
-class ListMetalApi(APIView):
-    def get(self, request, format=None):
-        data = Metal.objects.all()
-        serializer = MetalSerializer(data, many=True)
-
-        return Response(serializer.data)
 
 
 class SetExperimentData(MultiFormsView):

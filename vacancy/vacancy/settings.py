@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'captcha',
-    'rest_framework',
+    # 'captcha',
+    # 'rest_framework',
     'latexify',
 
     'authapp',
@@ -144,6 +144,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-RECAPTCHA_PUBLIC_KEY = env("RECAPTCHA_PUBLIC_KEY")
-RECAPTCHA_PRIVATE_KEY = env("RECAPTCHA_PRIVATE_KEY")
-SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
+# RECAPTCHA_PUBLIC_KEY = env("RECAPTCHA_PUBLIC_KEY")
+# RECAPTCHA_PRIVATE_KEY = env("RECAPTCHA_PRIVATE_KEY")
+# SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
