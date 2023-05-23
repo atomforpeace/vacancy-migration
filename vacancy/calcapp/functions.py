@@ -351,13 +351,11 @@ class Experiment:
         Решение задачи Коши методом Эйлера
         """
 
+        metal_init_length = self.detail.metal.metal_length
+
         # Расчет шага температуры
         delta_T = self.delta_time / self.exp_settings.warm_period
         self.temp += delta_T / 2
-
-        # Переменная номера шага для информативности
-        _step_count = 0
-
 
         # Выполняем расчет концентраций по шагам
         while self.current_time <= self.exp_settings.time_stop:
@@ -399,13 +397,13 @@ class Experiment:
                     'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
                     'con_surf': [self.concentrations['surf'], delta_stock["surf"]],
                     'con_vac': [self.concentrations['vac'], delta_stock["vac"]],
-                    'length': self.detail.metal.metal_length,
+                    'length': metal_init_length - self.detail.metal.metal_length,
                 }
             )
 
             if self.temp < self.exp_settings.temp_stop:
                 self.temp += delta_T
-            _step_count += 1
+
             self.current_time += self.delta_time
 
         return self.results
