@@ -15,9 +15,8 @@ class Metal(models.Model):
     dis_dens = models.FloatField(verbose_name='Плотность дислокаций, м-2')  # ro_d
     grid_par = models.FloatField(verbose_name='Параметр решетки, м')  # a
     close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла, м')  # a1
-    close_node = models.FloatField(verbose_name='Расстояние до ближайшего узла, м')  # a1
     atomic_volume = models.FloatField(verbose_name='Атомный объем, м3', default=7.23e-31)
-    metal_length = models.FloatField(verbose_name='Размер, м', default=0.04)
+    # metal_length = models.FloatField(verbose_name='Размер, м', default=0.04)
 
     def __str__(self):
         return self.metal_name
@@ -44,7 +43,7 @@ class Defect(models.Model):
     surf_svol = models.FloatField(verbose_name='Удел.объем области для поверхности', default=2.2e-7)  # Vs
     clus_init_diam = models.FloatField(verbose_name='Средний начальный диаметр кластера, м')  # dc0
     clus_init_count = models.FloatField(verbose_name='Среднее начальное кол-во  v в кластере')  # nc0
-    recomb_rad = models.FloatField(verbose_name='Радиус спонтанной рекомбинации, м')  # eta
+    # recomb_rad = models.FloatField(verbose_name='Радиус спонтанной рекомбинации, м')  # eta
 
     def __str__(self):
         return self.defect_name

@@ -93,6 +93,17 @@ class Experiment:
         # Устанавливаем температуру равной начальной из БД
         self.temp = self.exp_settings.temp_start
 
+        # Назначаем переменную для изменения размера
+        self.delta_size = 0
+
+        # Назначаем предел для дислокаций
+        self.dis_limit = self.detail.metal.atomic_volume ** (-1 / 3)
+        self.dis_layers = 0
+
+        # Назначаем предел для поверхности
+        self.surf_limit = self.detail.metal.atomic_volume ** (-1 / 2)
+        self.surf_layers = 0
+
         # self.rel_volume_clus = NV1C
         self.concentrations = {
             'dis': 0,
@@ -351,8 +362,6 @@ class Experiment:
         Решение задачи Коши методом Эйлера
         """
 
-        metal_init_length = self.detail.metal.metal_length
-
         # Расчет шага температуры
         delta_T = self.delta_time / self.exp_settings.warm_period
         self.temp += delta_T / 2
@@ -373,18 +382,26 @@ class Experiment:
                 "surf": self.detail.volume_delta["surf"] * delta_stock["surf"]
             }
 
-            self.detail.metal.metal_length += delta_volume["surf"] / 3
+            self.delta_size += delta_volume["surf"] / 3
 
             # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
             delta_stock["vac"] = delta_vac["dis"] + delta_vac["gr"] + delta_vac["tw"] - delta_stock['surf']
 
             for stock in ("dis", "gr", "tw"):
                 delta_volume[stock] = self.detail.volume_delta[stock] * delta_vac[stock]
-                self.detail.metal.metal_length += delta_volume[stock] / 3
+                # self.detail.metal.metal_length += delta_volume[stock] / 3
 
             # Расчет концентраций
             for stock in ("dis", "gr", "tw", "surf", "vac"):
                 self.concentrations[stock] += delta_stock[stock]
+
+            if self.concentrations["dis"] > self.dis_limit:
+                self.concentrations["dis"] = 0
+                self.dis_layers += 1
+
+            # if self.concentrations["surf"] > self.surf_limit:
+            #     self.concentrations["surf"] = 0
+            #     self.surf_layers += 1
 
             self.results.append(
                 {
@@ -397,7 +414,7 @@ class Experiment:
                     'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
                     'con_surf': [self.concentrations['surf'], delta_stock["surf"]],
                     'con_vac': [self.concentrations['vac'], delta_stock["vac"]],
-                    'length': metal_init_length - self.detail.metal.metal_length,
+                    'length': self.delta_size,
                 }
             )
 
