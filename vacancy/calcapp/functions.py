@@ -93,6 +93,17 @@ class Experiment:
         # Устанавливаем температуру равной начальной из БД
         self.temp = self.exp_settings.temp_start
 
+        # Назначаем переменную для изменения размера
+        self.delta_size = 0
+
+        # Назначаем предел для дислокаций
+        self.dis_limit = self.detail.metal.atomic_volume ** (-1 / 3)
+        self.dis_layers = 0
+
+        # Назначаем предел для поверхности
+        self.surf_limit = self.detail.metal.atomic_volume ** (-2 / 3)
+        self.surf_layers = 0
+
         # self.rel_volume_clus = NV1C
         self.concentrations = {
             'dis': 0,
@@ -150,6 +161,16 @@ class Experiment:
         self.delta_time = self.exp_settings.time_step
         self.current_time = 0
 
+    def conc_dis(self, conc_tmp):
+        probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
+        conc_plus = 3 * np.pi * probability * (1 - 4 * self.detail.metal.close_node * conc_tmp) * self.detail.metal.close_node ** 2 * \
+        self.concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+
+        probability = 1 / (1 + 0.5 * b_factor(self.detail.defect.dis_ener, self.temp))
+
+        conc_minus = probability * conc_tmp * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+        return (conc_plus - conc_minus) * self.delta_time
+
     @property
     def conc_dis_plus(self):
         """
@@ -163,7 +184,7 @@ class Experiment:
         """
 
         # flow_plus = unit_volume * probability * self.conc_const * c.DEBYE * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp)
-        flow_plus = 3 * np.pi * probability * (1 - 4 * self.detail.metal.close_node * conc_abs_to_rel(self.concentrations['dis'], self.detail.metal.grid_par)) * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+        flow_plus = 3 * np.pi * probability * (1 - 4 * self.detail.metal.close_node * self.concentrations['dis']) * self.detail.metal.close_node ** 2 * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
         return flow_plus
 
@@ -210,7 +231,7 @@ class Experiment:
         """
         n_vg = 2*a1*(1-16*a1^2*n_vg)*n_v*tau*exp(-E_mv/(kT)) / (1+exp(-E_vg/(kT)))
         """
-        flow_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * conc_abs_to_rel(self.concentrations['gr'], self.detail.metal.grid_par)) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+        flow_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * self.concentrations['gr']) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
         return flow_plus
 
@@ -256,7 +277,7 @@ class Experiment:
         """
         
         """
-        flow_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * conc_abs_to_rel(self.concentrations['tw'], self.detail.metal.grid_par)) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
+        flow_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * self.concentrations['tw']) * probability * self.concentrations['vac'] * self.delta_time * b_factor(-self.detail.defect.mig_ener, self.temp) * c.DEBYE
 
         return flow_plus
 
@@ -351,8 +372,6 @@ class Experiment:
         Решение задачи Коши методом Эйлера
         """
 
-        metal_init_length = self.detail.metal.metal_length
-
         # Расчет шага температуры
         delta_T = self.delta_time / self.exp_settings.warm_period
         self.temp += delta_T / 2
@@ -366,6 +385,7 @@ class Experiment:
             for stock in ("dis", "gr", "tw"):
                 delta_stock[stock], delta_vac[stock] = self.correct_flow(stock)
 
+            # delta_stock["dis"] = (delta_stock["dis"] + self.conc_dis(self.concentrations["dis"] + delta_stock["dis"])) / 2
 
             delta_stock['surf'] = self.conc_surf_plus
 
@@ -373,18 +393,26 @@ class Experiment:
                 "surf": self.detail.volume_delta["surf"] * delta_stock["surf"]
             }
 
-            self.detail.metal.metal_length += delta_volume["surf"] / 3
+            self.delta_size += delta_volume["surf"] / 3
 
             # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
             delta_stock["vac"] = delta_vac["dis"] + delta_vac["gr"] + delta_vac["tw"] - delta_stock['surf']
 
             for stock in ("dis", "gr", "tw"):
                 delta_volume[stock] = self.detail.volume_delta[stock] * delta_vac[stock]
-                self.detail.metal.metal_length += delta_volume[stock] / 3
+                # self.detail.metal.metal_length += delta_volume[stock] / 3
 
             # Расчет концентраций
             for stock in ("dis", "gr", "tw", "surf", "vac"):
                 self.concentrations[stock] += delta_stock[stock]
+
+            if self.concentrations["dis"] > self.dis_limit:
+                self.concentrations["dis"] = 0
+                self.dis_layers += 1
+
+            # if self.concentrations["surf"] > self.surf_limit:
+            #     self.concentrations["surf"] = 0
+            #     self.surf_layers += 1
 
             self.results.append(
                 {
@@ -397,7 +425,7 @@ class Experiment:
                     'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
                     'con_surf': [self.concentrations['surf'], delta_stock["surf"]],
                     'con_vac': [self.concentrations['vac'], delta_stock["vac"]],
-                    'length': metal_init_length - self.detail.metal.metal_length,
+                    'length': self.delta_size,
                 }
             )
 
