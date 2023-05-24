@@ -109,7 +109,7 @@ class CalcView(View):
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_surf, name="Поверхность"))
         figure_vac.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
         figure_vac.update_layout(
-            title="Вакансии",
+            title="Концентрация вакансий на стоках",
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
             legend=dict(
@@ -177,7 +177,7 @@ class CalcView(View):
         figure_matrix = go.Figure()
         figure_matrix.add_trace(go.Line(x=plot_x, y=plot_vac, name="В матрице"))
         figure_matrix.update_layout(
-            title="Матрица",
+            title="Концентрация вакансий в матрице",
             height=PLOT_HEIGHT,
             width=PLOT_WIDTH,
             legend=dict(
