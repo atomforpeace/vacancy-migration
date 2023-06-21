@@ -23,9 +23,9 @@ def export_results_to_xls(data):
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
 
-    col_num = 0
+    row_num = 0
 
-    columns = [
+    rows = [
         'Время',
         'Температура',
         'nvd',
@@ -36,24 +36,24 @@ def export_results_to_xls(data):
         'dl',
     ]
 
-    ws.col(0).width = 4000
+    # ws.row(0).width = 4000
 
-    for row_num in range(len(columns)):
-        ws.write(row_num, col_num, columns[row_num], font_style)
+    for col_num in range(len(rows)):
+        ws.write(row_num, col_num, rows[col_num], font_style)
 
     font_style = xlwt.XFStyle()
 
-    for col in data:
-        col_num += 1
+    for row in data:
+        row_num += 1
 
-        ws.col(col_num).width = 2000
+        # ws.row(row_num).width = 2000
 
-        col = list(col.values())
+        row = list(row.values())
 
-        for row_num in range(len(columns)):
-            if isinstance(col[row_num], list):
-                col[row_num] = col[row_num][0]
-            ws.write(row_num, col_num, col[row_num], font_style)
+        for col_num in range(len(rows)):
+            if isinstance(row[col_num], list):
+                row[col_num] = row[col_num][0]
+            ws.write(row_num, col_num, row[col_num], font_style)
 
     # wb.save(response)
     wb.save(f'files/{filename}')
