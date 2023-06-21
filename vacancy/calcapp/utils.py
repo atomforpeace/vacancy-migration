@@ -26,12 +26,14 @@ def export_results_to_xls(data):
     col_num = 0
 
     columns = [
+        'Время',
         'Температура',
         'nvd',
         'nvg',
         'nvt',
         'nv',
-        'Dcv',
+        'ns',
+        'dl',
     ]
 
     ws.col(0).width = 4000
@@ -49,6 +51,8 @@ def export_results_to_xls(data):
         col = list(col.values())
 
         for row_num in range(len(columns)):
+            if isinstance(col[row_num], list):
+                col[row_num] = col[row_num][0]
             ws.write(row_num, col_num, col[row_num], font_style)
 
     # wb.save(response)
