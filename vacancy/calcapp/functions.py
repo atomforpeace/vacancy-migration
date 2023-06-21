@@ -15,17 +15,10 @@ django.setup()
 import calcapp.constants as c
 from calcapp.models import Metal, Defect, ExperimentSettings
 
-# CONC_REL = 2.82e-4
-# CONC_REL = 4.6e-4
-# CONC_ABS = 4.18e25
-# VS = 2.2e-7
-# EVC = 0.05  # Что это?
-#
-# NV1C = 47.3
-# NC0 = 4.42e22
 
-
-# DELTA_TIME_MIN = 10
+# Если True, будет скорректирован расчет концентраций.
+# Если False - обычный расчет.
+CORRECT_COUNT = True
 
 def b_factor(energy, temp):
     """
@@ -86,6 +79,15 @@ class Experiment:
     Эксперимент
     """
 
+    # ВСЕ ВИДЫ СТОКОВ
+    TYPES = (
+        "dis",
+        "tw",
+        "gr",
+        "surf",
+        "vac",
+    )
+
     def __init__(self, detail, exp_settings):
         self.detail = detail
         self.exp_settings = exp_settings
@@ -113,6 +115,8 @@ class Experiment:
             # 'vac': self.exp_settings.conc_vac_start,
             'vac': conc_rel_to_abs(self.exp_settings.conc_vac_start, self.detail.metal.grid_par),
         }
+
+
 
         self.concentrations_delta = {
             "dis": 1,
@@ -160,6 +164,119 @@ class Experiment:
 
         self.delta_time = self.exp_settings.time_step
         self.current_time = 0
+
+    def func_conc(self, type_: str, temp: float, concentrations: dict):
+        functions = {
+            "dis": self.func_conc_dis(temp, concentrations),
+            "tw": self.func_conc_tw(temp, concentrations),
+            "gr": self.func_conc_gr(temp, concentrations),
+            "surf": self.func_conc_surf(temp, concentrations),
+            "vac": self.func_conc_vac(temp, concentrations),
+        }
+
+        if type_ in functions:
+            return functions[type_]
+        else:
+            raise TypeError
+
+    def func_conc_dis(self, temp, concentrations: dict):
+        """
+        Новая реализация расчетов (июнь 2023)
+        Функция расчета концентрации на дислокации (без умножения на время)
+        :param concentrations:
+        :return:
+        """
+        probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, temp))
+        conc_plus = 3 * np.pi * probability * (1 - 4 * self.detail.metal.close_node * concentrations["dis"]) * self.detail.metal.close_node ** 2 * \
+            concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + 0.5 * b_factor(self.detail.defect.dis_ener, temp))
+        conc_minus = probability * concentrations["dis"] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+        return conc_plus - conc_minus
+
+    def func_conc_tw(self, temp, concentrations: dict):
+        """
+        Новая реализация расчетов (июнь 2023)
+        Функция расчета концентрации на двойники (без умножения на время)
+        :param concentrations:
+        :return:
+        """
+        probability = 1 / (1 + b_factor(-self.detail.defect.tw_ener, temp))
+        conc_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * concentrations['tw']) * probability * \
+                    concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + b_factor(self.detail.defect.tw_ener, temp))
+        conc_minus = probability * concentrations['tw'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        return conc_plus - conc_minus
+
+    def func_conc_gr(self, temp, concentrations: dict):
+        """
+        Новая реализация расчетов (июнь 2023)
+        Функция расчета концентрации на зерна (без умножения на время)
+        :param concentrations:
+        :return:
+        """
+
+        probability = 1 / (1 + b_factor(-self.detail.defect.gr_ener, temp))
+        conc_plus = 2 * self.detail.metal.close_node ** 2 * (1 - 16 * self.detail.metal.close_node ** 2 * concentrations['gr']) * \
+                    probability * concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + b_factor(self.detail.defect.gr_ener, temp))
+        conc_minus = probability * concentrations['gr'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        return conc_plus - conc_minus
+
+    def func_conc_surf(self, temp, concentrations: dict):
+        """
+        Новая реализация расчетов (июнь 2023)
+        Функция расчета концентрации на поверхность (без умножения на время)
+        :param concentrations:
+        :return:
+        """
+
+        flow_plus = 1080 * concentrations['vac'] * c.DEBYE * b_factor(-self.detail.defect.mig_ener, temp) * self.detail.metal.close_node
+
+        return flow_plus
+
+    def func_conc_vac(self, temp, concentrations: dict):
+        """
+        Новая реализация расчетов (июнь 2023)
+        Функция расчета изменения концентраций в матрице за счет потока с дислокаций (без умножения на время)
+        :param temp:
+        :param concentrations:
+        :return:
+        """
+
+        probability = 1 / (1 + 0.5 * b_factor(self.detail.defect.dis_ener, temp))
+        dis_conc_plus = probability * concentrations['dis'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, temp))
+        dis_conc_minus = probability * 3 * np.pi * self.detail.metal.close_node ** 2 * concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, temp)
+
+        probability = 1 / (1 + b_factor(self.detail.defect.tw_ener, temp))
+        tw_conc_plus = probability * concentrations['tw'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + b_factor(-self.detail.defect.tw_ener, temp))
+        tw_conc_minus = 2 * self.detail.metal.close_node ** 2 * probability * concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + b_factor(self.detail.defect.gr_ener, temp))
+        gr_conc_plus = probability * concentrations['gr'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        probability = 1 / (1 + b_factor(-self.detail.defect.gr_ener, temp))
+        gr_conc_minus = 2 * self.detail.metal.close_node ** 2 * probability * concentrations['vac'] * b_factor(-self.detail.defect.mig_ener, temp) * c.DEBYE
+
+        flow_plus = 1080 * concentrations['vac'] * c.DEBYE * b_factor(-self.detail.defect.mig_ener,
+                                                                      temp) * self.detail.metal.close_node
+        print(self.detail.metal.dis_dens * (dis_conc_plus - dis_conc_minus) * 60 + \
+        self.detail.metal.tw_sarea * (tw_conc_plus - tw_conc_minus) * 60 + \
+        self.detail.metal.gr_sarea * (gr_conc_plus - gr_conc_minus) * 60 + \
+        flow_plus * 60)
+
+        return self.detail.metal.dis_dens * (dis_conc_plus - dis_conc_minus) + \
+            self.detail.metal.tw_sarea * (tw_conc_plus - tw_conc_minus) + \
+            self.detail.metal.gr_sarea * (gr_conc_plus - gr_conc_minus) - flow_plus
+
 
     def conc_dis(self, conc_tmp):
         probability = 1 / (1 + 2 * b_factor(-self.detail.defect.dis_ener, self.temp))
@@ -367,52 +484,122 @@ class Experiment:
 
         return delta, matrix_delta
 
+    def count_euler(self, temp, delta_T, concentrations):
+        """
+        Основной расчет концентраций
+        :param concentrations:
+        :param delta_time:
+        :param delta_T:
+        :return:
+        """
+
+        # Вспомогательные переменные
+        concentrations_forecast = {"vac": concentrations["vac"]}
+        delta_stock = {}
+
+        # РАСЧЕТ ПРОМЕЖУТОЧНЫХ ЗНАЧЕНИЙ
+        for stock in ("dis", "gr", "tw", "surf"):
+            delta_stock[stock] = self.func_conc(type_=stock, temp=temp,
+                                                concentrations=concentrations) * self.delta_time
+            concentrations_forecast[stock] = concentrations[stock] + delta_stock[stock] / 2
+
+
+        # РАСЧЕТ ЗНАЧЕНИЙ КОНЦЕНТРАЦИИ
+        for stock in ("dis", "gr", "tw", "surf"):
+            delta_stock[stock] = self.func_conc(type_=stock, temp=temp + delta_T / 2,
+                                                concentrations=concentrations_forecast) * self.delta_time
+            concentrations[stock] += delta_stock[stock]
+
+        delta_stock["vac"] = self.func_conc("vac", temp=temp, concentrations=concentrations) * self.delta_time
+        concentrations["vac"] += delta_stock["vac"]
+
+        # print(delta_stock["surf"], delta_stock["vac"])
+
+        return delta_stock, concentrations
+
+    def count_runge_kutt(self, temp, delta_T, concentrations):
+        """
+        Основной расчет концентраций
+        :param concentrations:
+        :param delta_time:
+        :param delta_T:
+        :return:
+        """
+
+        # Вспомогательные переменные
+        concentrations_forecast = {"vac": concentrations["vac"]}
+        delta_stock = {}
+
+        # РАСЧЕТ ПРОМЕЖУТОЧНЫХ ЗНАЧЕНИЙ
+        for stock in ("dis", "gr", "tw", "surf"):
+            delta_stock[stock] = self.func_conc(type_=stock, temp=temp,
+                                                concentrations=concentrations) * self.delta_time
+            concentrations_forecast[stock] = concentrations[stock] + delta_stock[stock] / 2
+
+
+        # РАСЧЕТ ЗНАЧЕНИЙ КОНЦЕНТРАЦИИ
+        for stock in ("dis", "gr", "tw", "surf"):
+            delta_stock[stock] = self.func_conc(type_=stock, temp=temp + delta_T / 2,
+                                                concentrations=concentrations_forecast) * self.delta_time
+            concentrations[stock] += delta_stock[stock]
+
+        delta_stock["vac"] = self.func_conc("vac", temp=temp, concentrations=concentrations) * self.delta_time
+        concentrations["vac"] += delta_stock["vac"]
+
+        # print(delta_stock["surf"], delta_stock["vac"])
+
+        return delta_stock, concentrations
+
     def start(self):
         """
-        Решение задачи Коши методом Эйлера
+        Решение задачи Коши усовершенствованным методом Эйлера
         """
 
         # Расчет шага температуры
         delta_T = self.delta_time / self.exp_settings.warm_period
-        self.temp += delta_T / 2
 
         # Выполняем расчет концентраций по шагам
         while self.current_time <= self.exp_settings.time_stop:
 
-            delta_stock = {}
-            delta_vac = {}
+            if CORRECT_COUNT:
+                delta_stock, concentrations = self.count_euler(self.temp, delta_T, self.concentrations)
+                for stock in ("dis", "gr", "tw"):
+                    if self.concentrations[stock] + delta_stock[stock] < 0:
+                        delta_stock[stock] = 0
+                    else:
+                        # Растет ли концентрация на стоке?
+                        if delta_stock[stock] < 0:
+                            self.is_grow[stock] = False
 
-            for stock in ("dis", "gr", "tw"):
-                delta_stock[stock], delta_vac[stock] = self.correct_flow(stock)
+                        # Если концентрация на стоке падает, расчитываем коэффициент падения
+                        if not self.is_grow[stock]:
+                            self.conc_coef[stock] = self.concentrations_delta[stock] / self.concentrations_delta_prev[stock]
 
-            # delta_stock["dis"] = (delta_stock["dis"] + self.conc_dis(self.concentrations["dis"] + delta_stock["dis"])) / 2
+                            # Если дельта уменьшения до этого уменьшалась по модулю
+                            if abs(self.concentrations_delta[stock]) < abs(self.concentrations_delta_prev[stock]):
+                                self.is_fall_slow[stock] = True
 
-            delta_stock['surf'] = self.conc_surf_plus
+                            # Отлавливаем момент, когда концентрации снова увеличиваются
+                            if self.is_fall_slow[stock]:
+                                # Если снова растет (хотя не должен)
+                                if delta_stock[stock] > self.concentrations_delta[stock]:
+                                    # matrix_delta = matrix_delta * self.concentrations_delta[stock] * self.conc_coef[
+                                    #     stock] / delta
+                                    delta_stock[stock] = self.concentrations_delta[stock] * self.conc_coef[stock]
+                                    self.concentrations[stock] += delta_stock[stock]
+                                    # delta_stock_, concentrations_ = self.count_conc(self.temp + delta_T, delta_T, concentrations)
+                                    # delta_stock[stock] = (delta_stock_[stock] + delta_stock[stock]) / 2
+                                    # self.concentrations[stock] = (concentrations_[stock] + concentrations[stock]) / 2
 
-            delta_volume = {
-                "surf": self.detail.volume_delta["surf"] * delta_stock["surf"]
-            }
+                            # if self.concentrations[stock] + delta < 0:
+                            #     delta = 0
+                            #     matrix_delta = 0
 
-            self.delta_size += delta_volume["surf"] / 3
-
-            # Расчет дельты концентрации вакансий с учетом потоком на/с стоки
-            delta_stock["vac"] = delta_vac["dis"] + delta_vac["gr"] + delta_vac["tw"] - delta_stock['surf']
-
-            for stock in ("dis", "gr", "tw"):
-                delta_volume[stock] = self.detail.volume_delta[stock] * delta_vac[stock]
-                # self.detail.metal.metal_length += delta_volume[stock] / 3
-
-            # Расчет концентраций
-            for stock in ("dis", "gr", "tw", "surf", "vac"):
-                self.concentrations[stock] += delta_stock[stock]
-
-            if self.concentrations["dis"] > self.dis_limit:
-                self.concentrations["dis"] = 0
-                self.dis_layers += 1
-
-            # if self.concentrations["surf"] > self.surf_limit:
-            #     self.concentrations["surf"] = 0
-            #     self.surf_layers += 1
+                        self.concentrations_delta_prev[stock] = self.concentrations_delta[stock]
+                        if delta_stock[stock] != 0:
+                            self.concentrations_delta[stock] = delta_stock[stock]
+            else:
+                delta_stock, self.concentrations = self.count_euler(delta_T, self.concentrations)
 
             self.results.append(
                 {
@@ -420,7 +607,7 @@ class Experiment:
                     'time_range': time_to_str(int(self.current_time), int(self.delta_time)),
                     'T': self.temp,
                     'con_dis': [self.concentrations['dis'], delta_stock["dis"]],
-                    'clean_delta': delta_vac["dis"] / b_factor(-self.detail.defect.mig_ener, self.temp) / c.DEBYE,
+                    # 'clean_delta': delta_vac["dis"] / b_factor(-self.detail.defect.mig_ener, self.temp) / c.DEBYE,
                     'con_gr': [self.concentrations['gr'], delta_stock["gr"]],
                     'con_tw': [self.concentrations['tw'], delta_stock["tw"]],
                     'con_surf': [self.concentrations['surf'], delta_stock["surf"]],

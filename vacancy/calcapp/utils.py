@@ -49,7 +49,10 @@ def export_results_to_xls(data):
         col = list(col.values())
 
         for row_num in range(len(columns)):
-            ws.write(row_num, col_num, col[row_num], font_style)
+            try:
+                ws.write(row_num, col_num, col[row_num], font_style)
+            except:
+                pass
 
     # wb.save(response)
     wb.save(f'files/{filename}')

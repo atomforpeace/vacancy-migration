@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 
 from calcapp.functions import Detail, Experiment
 from calcapp.models import Metal, Defect, ExperimentSettings
-from calcapp.utils import filter_results
+from calcapp.utils import filter_results, export_results_to_xls
 
 
 PLOT_HEIGHT = 400
@@ -66,6 +66,8 @@ class CalcView(View):
 
         results = experiment.start()
 
+        filename = export_results_to_xls(results)
+
         plot_x = [item['time'] for item in results]
         plot_T = [item['T'] for item in results]
         plot_dis = [item['con_dis'][0] for item in results]
@@ -80,7 +82,7 @@ class CalcView(View):
         plot_vac = [item['con_vac'][0] for item in results]
         # plot_prob_plus = [item['prob_plus'] for item in results]
         # plot_prob_minus = [item['prob_minus'] for item in results]
-        plot_clean_delta = [item['clean_delta'] for item in results]
+        # plot_clean_delta = [item['clean_delta'] for item in results]
         # b_factor = [item['b_factor'] for item in results]
         plot_length = [item['length'] for item in results]
 
@@ -262,21 +264,21 @@ class CalcView(View):
 
 
         # Дельта дислокаций без Av
-        figure_clean_delta = go.Figure()
-        figure_clean_delta.add_trace(go.Line(x=plot_x, y=plot_clean_delta, name="Дельта на дислокациях (без Av)"))
-        figure_clean_delta.update_layout(
-            title="Дельта потоков на дислокациях (без Av)",
-            height=PLOT_HEIGHT,
-            width=PLOT_WIDTH,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.1,
-                xanchor="left",
-                x=0.01
-            )
-        )
-        figure_clean_delta.update_xaxes(title="Время, мин")
+        # figure_clean_delta = go.Figure()
+        # figure_clean_delta.add_trace(go.Line(x=plot_x, y=plot_clean_delta, name="Дельта на дислокациях (без Av)"))
+        # figure_clean_delta.update_layout(
+        #     title="Дельта потоков на дислокациях (без Av)",
+        #     height=PLOT_HEIGHT,
+        #     width=PLOT_WIDTH,
+        #     legend=dict(
+        #         orientation="h",
+        #         yanchor="bottom",
+        #         y=-0.1,
+        #         xanchor="left",
+        #         x=0.01
+        #     )
+        # )
+        # figure_clean_delta.update_xaxes(title="Время, мин")
 
         # Вероятности
         # figure_probability = go.Figure()
@@ -336,8 +338,9 @@ class CalcView(View):
             'figure_tw': figure_tw.to_html(),
             'figure_matrix': figure_matrix.to_html(),
             'figure_surf': figure_surf.to_html(),
-            'figure_clean_delta': figure_clean_delta.to_html(),
+            # 'figure_clean_delta': figure_clean_delta.to_html(),
             'figure_length': figure_plot_length.to_html(),
+            'filename': filename,
         }
         # print(results)
 
