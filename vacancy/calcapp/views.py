@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 
 from calcapp.functions import Detail, Experiment
 from calcapp.models import Metal, Defect, ExperimentSettings
-from calcapp.utils import filter_results
+from calcapp.utils import filter_results, export_results_to_xls
 
 
 PLOT_HEIGHT = 400
@@ -324,6 +324,8 @@ class CalcView(View):
             'clean_delta'
         ])
 
+        export_results = export_results_to_xls(results)
+
         context = {
             'results': results,
             'figure_temp': figure_temp.to_html(),
@@ -338,6 +340,7 @@ class CalcView(View):
             'figure_surf': figure_surf.to_html(),
             'figure_clean_delta': figure_clean_delta.to_html(),
             'figure_length': figure_plot_length.to_html(),
+            'export_results': export_results,
         }
         # print(results)
 
